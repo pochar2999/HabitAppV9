@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitFlow - Build & Break Habits</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Home Screen -->
+        <div id="home-screen" class="screen active">
+            <header class="header">
+                <h1 class="app-title">HabitFlow</h1>
+                <div class="greeting" id="greeting">Welcome back, User!</div>
+                <div class="stats">
+                    <span class="stat-item">
+                        <span class="stat-number" id="days-logged">0</span>
+                        <span class="stat-label">Days Logged</span>
+                    </span>
+                </div>
+            </header>
+            
+            <div class="home-content">
+                <div class="habit-flow-card build-card" onclick="navigateTo('build-habits')">
+                    <div class="card-icon">✅</div>
+                    <h3>Build a Habit</h3>
+                    <p>Start forming positive habits with proven methods</p>
+                </div>
+                
+                <div class="habit-flow-card break-card" onclick="navigateTo('break-habits')">
+                    <div class="card-icon">❌</div>
+                    <h3>Break a Habit</h3>
+                    <p>Overcome unwanted behaviors with targeted strategies</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Build Habits Screen -->
+        <div id="build-habits-screen" class="screen">
+            <header class="header">
+                <button class="back-btn" onclick="navigateTo('home')">← Back</button>
+                <h2>Build a Habit</h2>
+            </header>
+            
+            <div class="search-container">
+                <input type="text" id="build-search" placeholder="Search habits..." class="search-input" oninput="searchHabits('build')">
+            </div>
+            
+            <div class="habits-list" id="build-habits-list">
+                <div class="habit-card" data-habit="drink-water" onclick="selectHabit('drink-water', 'build')">
+                    <div class="habit-icon">💧</div>
+                    <div class="habit-info">
+                        <h4>Drink More Water</h4>
+                        <p>Stay hydrated and boost your energy</p>
+                    </div>
+                </div>
+                
+                <div class="habit-card" data-habit="wake-early" onclick="selectHabit('wake-early', 'build')">
+                    <div class="habit-icon">🌅</div>
+                    <div class="habit-info">
+                        <h4>Wake Up Early</h4>
+                        <p>Start your day with intention and productivity</p>
+                    </div>
+                </div>
+                
+                <div class="habit-card" data-habit="meditation" onclick="selectHabit('meditation', 'build')">
+                    <div class="habit-icon">🧘</div>
+                    <div class="habit-info">
+                        <h4>Practice Meditation</h4>
+                        <p>Reduce stress and improve mental clarity</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Break Habits Screen -->
+        <div id="break-habits-screen" class="screen">
+            <header class="header">
+                <button class="back-btn" onclick="navigateTo('home')">← Back</button>
+                <h2>Break a Habit</h2>
+            </header>
+            
+            <div class="search-container">
+                <input type="text" id="break-search" placeholder="Search habits..." class="search-input" oninput="searchHabits('break')">
+            </div>
+            
+            <div class="habits-list" id="break-habits-list">
+                <div class="habit-card" data-habit="procrastination" onclick="selectHabit('procrastination', 'break')">
+                    <div class="habit-icon">⏰</div>
+                    <div class="habit-info">
+                        <h4>Stop Procrastinating</h4>
+                        <p>Overcome delays and boost productivity</p>
+                    </div>
+                </div>
+                
+                <div class="habit-card" data-habit="phone-use" onclick="selectHabit('phone-use', 'break')">
+                    <div class="habit-icon">📱</div>
+                    <div class="habit-info">
+                        <h4>Quit Excessive Phone Use</h4>
+                        <p>Reduce screen time and improve focus</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Screen -->
+        <div id="strategy-screen" class="screen">
+            <header class="header">
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <h2 id="strategy-title">Habit Strategy</h2>
+            </header>
+            
+            <div class="strategy-content">
+                <div class="habit-description" id="habit-description"></div>
+                
+                <div class="methods-section">
+                    <h3>Recommended Methods</h3>
+                    <div id="methods-list"></div>
+                </div>
+                
+                <div class="quote-section" id="quote-section" style="display: none;">
+                    <h3>Motivation</h3>
+                    <blockquote id="motivational-quote"></blockquote>
+                </div>
+                
+                <button class="start-btn" id="start-habit-btn" onclick="startHabit()">Start Habit Plan</button>
+            </div>
+        </div>
+
+        <!-- Daily Tracker Screen -->
+        <div id="tracker-screen" class="screen">
+            <header class="header">
+                <h2>Daily Tracker</h2>
+            </header>
+            
+            <div class="tracker-content">
+                <div class="habit-status">
+                    <div class="habit-title" id="current-habit-title"></div>
+                    <div class="streak-info">
+                        <span class="streak-number" id="streak-count">0</span>
+                        <span class="streak-label">day streak</span>
+                    </div>
+                </div>
+                
+                <div class="today-section">
+                    <h3>Today's Action</h3>
+                    <div class="method-display" id="current-method"></div>
+                    <button class="action-btn" id="action-btn" onclick="markComplete()">Mark as Done</button>
+                </div>
+                
+                <div class="journal-section">
+                    <h3>Quick Note (Optional)</h3>
+                    <textarea id="daily-note" placeholder="How did it go today?" class="journal-input"></textarea>
+                    <button class="save-note-btn" onclick="saveNote()">Save Note</button>
+                </div>
+                
+                <div class="progress-summary">
+                    <div class="success-rate">
+                        <span class="rate-number" id="success-rate">0%</span>
+                        <span class="rate-label">Success Rate</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Screen -->
+        <div id="progress-screen" class="screen">
+            <header class="header">
+                <h2>Progress Overview</h2>
+            </header>
+            
+            <div class="progress-content">
+                <div class="progress-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-days">0</div>
+                        <div class="stat-label">Total Days</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="current-streak">0</div>
+                        <div class="stat-label">Current Streak</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="best-streak">0</div>
+                        <div class="stat-label">Best Streak</div>
+                    </div>
+                </div>
+                
+                <div class="progress-chart">
+                    <h3>Weekly Progress</h3>
+                    <div class="chart-container">
+                        <canvas id="progress-chart" width="300" height="150"></canvas>
+                    </div>
+                </div>
+                
+                <div class="completion-bar">
+                    <h3>Completion Rate</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="completion-fill"></div>
+                    </div>
+                    <span class="completion-text" id="completion-text">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hotline Screen -->
+        <div id="hotline-screen" class="screen">
+            <header class="header">
+                <h2>Support & Hotline</h2>
+            </header>
+            
+            <div class="hotline-content">
+                <div class="support-intro">
+                    <div class="support-icon">🤝</div>
+                    <h3>You're Not Alone</h3>
+                    <p>Breaking habits can be challenging. If you're struggling, professional support is available.</p>
+                </div>
+                
+                <div class="hotline-list">
+                    <div class="hotline-card">
+                        <h4>General Support</h4>
+                        <p>24/7 Crisis and Support</p>
+                        <div class="phone-number">1-800-EXAMPLE</div>
+                    </div>
+                    
+                    <div class="hotline-card">
+                        <h4>Addiction Support</h4>
+                        <p>Substance Abuse Helpline</p>
+                        <div class="phone-number">1-800-HELP-NOW</div>
+                    </div>
+                    
+                    <div class="hotline-card">
+                        <h4>Mental Health</h4>
+                        <p>Mental Health Crisis Line</p>
+                        <div class="phone-number">1-800-MENTAL</div>
+                    </div>
+                </div>
+                
+                <div class="emergency-note">
+                    <p><strong>In case of emergency:</strong> Call 911 or go to your nearest emergency room.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-btn" onclick="navigateTo('home')" data-tab="home">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-btn" onclick="navigateTo('tracker')" data-tab="tracker">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Tracker</span>
+        </button>
+        <button class="nav-btn" onclick="navigateTo('progress')" data-tab="progress">
+            <span class="nav-icon">📈</span>
+            <span class="nav-label">Progress</span>
+        </button>
+        <button class="nav-btn" onclick="navigateTo('hotline')" data-tab="hotline">
+            <span class="nav-icon">📞</span>
+            <span class="nav-label">Support</span>
+        </button>
+    </nav>
+
+    <script src="script.js"></script>
+</body>
+</html>
