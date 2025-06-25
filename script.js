@@ -5,17 +5,17 @@ let habitType = null;
 let appData = {
     user: 'User',
     daysLogged: 0,
-    currentHabit: null,
+    activeHabits: [],
     habits: {},
     dailyNotes: {}
 };
 
-// Habit Data
+// Habit Data with images
 const habitsData = {
     'drink-water': {
         name: 'Drink More Water',
         type: 'build',
-        icon: '💧',
+        image: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=80&h=80&fit=crop&crop=center',
         description: 'Staying hydrated is crucial for your physical and mental health. Proper hydration boosts energy, improves brain function, and helps maintain healthy skin. Most people don\'t drink enough water daily, making this a simple but powerful habit to develop.',
         methods: [
             {
@@ -35,7 +35,7 @@ const habitsData = {
     'wake-early': {
         name: 'Wake Up Early',
         type: 'build',
-        icon: '🌅',
+        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=80&h=80&fit=crop&crop=center',
         description: 'Early risers often report higher productivity, better mental health, and more time for personal activities. Waking up early gives you a head start on the day and creates a sense of accomplishment before most people are even awake.',
         methods: [
             {
@@ -55,7 +55,7 @@ const habitsData = {
     'meditation': {
         name: 'Practice Meditation',
         type: 'build',
-        icon: '🧘',
+        image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=80&h=80&fit=crop&crop=center',
         description: 'Meditation reduces stress, improves focus, and enhances emotional well-being. Even just a few minutes of daily meditation can significantly impact your mental clarity and overall happiness.',
         methods: [
             {
@@ -75,7 +75,7 @@ const habitsData = {
     'procrastination': {
         name: 'Stop Procrastinating',
         type: 'break',
-        icon: '⏰',
+        image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=80&h=80&fit=crop&crop=center',
         description: 'Procrastination often stems from fear of failure, perfectionism, or feeling overwhelmed. It creates a cycle of stress and decreased productivity that affects both work and personal life.',
         methods: [
             {
@@ -96,7 +96,7 @@ const habitsData = {
     'phone-use': {
         name: 'Quit Excessive Phone Use',
         type: 'break',
-        icon: '📱',
+        image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=80&h=80&fit=crop&crop=center',
         description: 'Excessive phone use can lead to decreased productivity, poor sleep, and reduced face-to-face social interactions. Breaking this habit can improve your focus, relationships, and overall well-being.',
         methods: [
             {
@@ -159,8 +159,8 @@ function updateScreenContent(screen) {
         case 'home':
             updateHomeScreen();
             break;
-        case 'tracker':
-            updateTrackerScreen();
+        case 'habits':
+            updateHabitsScreen();
             break;
         case 'progress':
             updateProgressScreen();
@@ -172,9 +172,11 @@ function updateScreenContent(screen) {
 function updateHomeScreen() {
     const greeting = document.getElementById('greeting');
     const daysLogged = document.getElementById('days-logged');
+    const activeHabits = document.getElementById('active-habits');
     
     greeting.textContent = `Welcome back, ${appData.user}!`;
     daysLogged.textContent = appData.daysLogged;
+    activeHabits.textContent = appData.activeHabits.length;
 }
 
 // Search Functions
@@ -251,75 +253,88 @@ function startHabit() {
             bestStreak: 0,
             completedDays: [],
             totalDays: 0,
-            currentMethod: 0
+            currentMethod: 0,
+            active: true
         };
+        
+        // Add to active habits if not already there
+        if (!appData.activeHabits.includes(currentHabit)) {
+            appData.activeHabits.push(currentHabit);
+        }
+    } else {
+        // Reactivate habit if it was inactive
+        appData.habits[currentHabit].active = true;
+        if (!appData.activeHabits.includes(currentHabit)) {
+            appData.activeHabits.push(currentHabit);
+        }
     }
     
-    appData.currentHabit = currentHabit;
     saveData();
-    
-    navigateTo('tracker');
+    navigateTo('habits');
 }
 
-// Tracker Screen Functions
-function updateTrackerScreen() {
-    if (!appData.currentHabit) {
-        // No active habit
-        document.querySelector('.tracker-content').innerHTML = `
-            <div style="text-align: center; padding: 40px;">
-                <h3>No Active Habit</h3>
-                <p>Start a habit from the home screen to begin tracking!</p>
-                <button onclick="navigateTo('home')" class="start-btn">Go to Home</button>
-            </div>
-        `;
+// Habits Management Screen Functions
+function updateHabitsScreen() {
+    const noHabitsMessage = document.getElementById('no-habits-message');
+    const activeHabitsList = document.getElementById('active-habits-list');
+    
+    if (appData.activeHabits.length === 0) {
+        noHabitsMessage.style.display = 'block';
+        activeHabitsList.innerHTML = '';
         return;
     }
     
-    const habit = habitsData[appData.currentHabit];
-    const habitData = appData.habits[appData.currentHabit];
+    noHabitsMessage.style.display = 'none';
+    activeHabitsList.innerHTML = '';
     
-    // Update habit title and streak
-    document.getElementById('current-habit-title').textContent = habit.name;
-    document.getElementById('streak-count').textContent = habitData.streak;
-    
-    // Update current method
-    const methodIndex = habitData.currentMethod || 0;
-    const currentMethod = habit.methods[methodIndex];
-    document.getElementById('current-method').innerHTML = `
-        <strong>${currentMethod.title}:</strong> ${currentMethod.description}
-    `;
-    
-    // Update action button
-    const actionBtn = document.getElementById('action-btn');
-    const today = new Date().toDateString();
-    const completedToday = habitData.completedDays.includes(today);
-    
-    if (habit.type === 'build') {
-        actionBtn.textContent = completedToday ? 'Completed Today!' : 'Mark as Done';
-        actionBtn.className = completedToday ? 'action-btn completed' : 'action-btn';
-    } else {
-        actionBtn.textContent = completedToday ? 'Resisted Today!' : 'Resist Temptation';
-        actionBtn.className = completedToday ? 'action-btn completed' : 'action-btn resist';
-    }
-    
-    // Update success rate
-    const successRate = habitData.totalDays > 0 ? 
-        Math.round((habitData.completedDays.length / habitData.totalDays) * 100) : 0;
-    document.getElementById('success-rate').textContent = successRate + '%';
-    
-    // Load today's note
-    const noteTextarea = document.getElementById('daily-note');
-    noteTextarea.value = appData.dailyNotes[today] || '';
+    appData.activeHabits.forEach(habitId => {
+        const habit = habitsData[habitId];
+        const habitData = appData.habits[habitId];
+        
+        if (!habit || !habitData || !habitData.active) return;
+        
+        const today = new Date().toDateString();
+        const completedToday = habitData.completedDays.includes(today);
+        
+        const habitItem = document.createElement('div');
+        habitItem.className = 'habit-item';
+        habitItem.innerHTML = `
+            <div class="habit-header">
+                <img src="${habit.image}" alt="${habit.name}" class="habit-item-image">
+                <div>
+                    <div class="habit-title">${habit.name}</div>
+                    <div class="habit-streak">${habitData.streak} day streak</div>
+                </div>
+            </div>
+            <div class="habit-actions">
+                ${habit.type === 'build' ? 
+                    `<button class="action-btn complete ${completedToday ? 'completed' : ''}" 
+                        onclick="markHabitComplete('${habitId}')" 
+                        ${completedToday ? 'disabled' : ''}>
+                        ${completedToday ? 'Completed Today!' : 'Mark Complete'}
+                    </button>` :
+                    `<button class="action-btn resist ${completedToday ? 'resisted' : ''}" 
+                        onclick="markHabitComplete('${habitId}')" 
+                        ${completedToday ? 'disabled' : ''}>
+                        ${completedToday ? 'Resisted Today!' : 'Mark Resisted'}
+                    </button>`
+                }
+                ${completedToday ? 
+                    `<button class="undo-btn" onclick="undoHabitComplete('${habitId}')">Undo</button>` : 
+                    ''
+                }
+            </div>
+        `;
+        
+        activeHabitsList.appendChild(habitItem);
+    });
 }
 
-function markComplete() {
-    if (!appData.currentHabit) return;
-    
+function markHabitComplete(habitId) {
     const today = new Date().toDateString();
-    const habitData = appData.habits[appData.currentHabit];
+    const habitData = appData.habits[habitId];
     
-    if (habitData.completedDays.includes(today)) {
-        // Already completed today
+    if (!habitData || habitData.completedDays.includes(today)) {
         return;
     }
     
@@ -335,33 +350,29 @@ function markComplete() {
     // Increment days logged
     appData.daysLogged += 1;
     
-    // Cycle through methods every 7 days
-    if (habitData.streak % 7 === 0) {
-        const habit = habitsData[appData.currentHabit];
-        habitData.currentMethod = (habitData.currentMethod + 1) % habit.methods.length;
-    }
-    
     saveData();
-    updateTrackerScreen();
-    
-    // Show success message
+    updateHabitsScreen();
     showSuccessMessage();
 }
 
-function saveNote() {
-    const noteTextarea = document.getElementById('daily-note');
+function undoHabitComplete(habitId) {
     const today = new Date().toDateString();
+    const habitData = appData.habits[habitId];
     
-    appData.dailyNotes[today] = noteTextarea.value;
+    if (!habitData || !habitData.completedDays.includes(today)) {
+        return;
+    }
+    
+    // Remove today from completed days
+    habitData.completedDays = habitData.completedDays.filter(date => date !== today);
+    habitData.streak = Math.max(0, habitData.streak - 1);
+    habitData.totalDays = Math.max(0, habitData.totalDays - 1);
+    
+    // Decrement days logged
+    appData.daysLogged = Math.max(0, appData.daysLogged - 1);
+    
     saveData();
-    
-    // Show saved message
-    const saveBtn = document.querySelector('.save-note-btn');
-    const originalText = saveBtn.textContent;
-    saveBtn.textContent = 'Saved!';
-    setTimeout(() => {
-        saveBtn.textContent = originalText;
-    }, 1500);
+    updateHabitsScreen();
 }
 
 function showSuccessMessage() {
@@ -371,13 +382,14 @@ function showSuccessMessage() {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: linear-gradient(135deg, #7ED321, #4A90E2);
+        background: linear-gradient(135deg, #48bb78, #38a169);
         color: white;
         padding: 20px 30px;
-        border-radius: 15px;
+        border-radius: 20px;
         font-size: 18px;
-        font-weight: bold;
+        font-weight: 600;
         z-index: 1000;
+        box-shadow: 0 8px 32px rgba(72, 187, 120, 0.4);
         animation: fadeIn 0.3s ease-in;
     `;
     message.textContent = 'Great job! Keep it up! 🎉';
@@ -390,43 +402,72 @@ function showSuccessMessage() {
 
 // Progress Screen Functions
 function updateProgressScreen() {
-    if (!appData.currentHabit) {
-        document.querySelector('.progress-content').innerHTML = `
-            <div style="text-align: center; padding: 40px;">
-                <h3>No Active Habit</h3>
-                <p>Start a habit to see your progress!</p>
-                <button onclick="navigateTo('home')" class="start-btn">Go to Home</button>
-            </div>
-        `;
+    const noProgressMessage = document.getElementById('no-progress-message');
+    const progressHabitsList = document.getElementById('progress-habits-list');
+    
+    if (appData.activeHabits.length === 0) {
+        noProgressMessage.style.display = 'block';
+        progressHabitsList.innerHTML = '';
         return;
     }
     
-    const habitData = appData.habits[appData.currentHabit];
+    noProgressMessage.style.display = 'none';
+    progressHabitsList.innerHTML = '';
     
-    // Update stats
-    document.getElementById('total-days').textContent = habitData.totalDays;
-    document.getElementById('current-streak').textContent = habitData.streak;
-    document.getElementById('best-streak').textContent = habitData.bestStreak;
-    
-    // Update completion rate
-    const completionRate = habitData.totalDays > 0 ? 
-        Math.round((habitData.completedDays.length / habitData.totalDays) * 100) : 0;
-    
-    document.getElementById('completion-fill').style.width = completionRate + '%';
-    document.getElementById('completion-text').textContent = completionRate + '%';
-    
-    // Update chart
-    updateProgressChart(habitData);
+    appData.activeHabits.forEach(habitId => {
+        const habit = habitsData[habitId];
+        const habitData = appData.habits[habitId];
+        
+        if (!habit || !habitData || !habitData.active) return;
+        
+        const completionRate = habitData.totalDays > 0 ? 
+            Math.round((habitData.completedDays.length / habitData.totalDays) * 100) : 0;
+        
+        const progressCard = document.createElement('div');
+        progressCard.className = 'progress-habit-card';
+        progressCard.innerHTML = `
+            <div class="progress-habit-header">
+                <img src="${habit.image}" alt="${habit.name}" class="progress-habit-image">
+                <div>
+                    <div class="progress-habit-title">${habit.name}</div>
+                    <div class="progress-habit-type">${habit.type} habit</div>
+                </div>
+            </div>
+            <div class="progress-stats">
+                <div class="progress-stat">
+                    <div class="progress-stat-value">${habitData.streak}</div>
+                    <div class="progress-stat-label">Current</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-value">${habitData.bestStreak}</div>
+                    <div class="progress-stat-label">Best</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-value">${completionRate}%</div>
+                    <div class="progress-stat-label">Success</div>
+                </div>
+            </div>
+            <div class="progress-chart-container">
+                <div class="progress-chart-title">Last 7 Days</div>
+                <div class="progress-chart" id="chart-${habitId}"></div>
+                <div class="chart-labels" id="labels-${habitId}"></div>
+            </div>
+        `;
+        
+        progressHabitsList.appendChild(progressCard);
+        
+        // Generate chart for this habit
+        generateProgressChart(habitId, habitData);
+    });
 }
 
-function updateProgressChart(habitData) {
-    const canvas = document.getElementById('progress-chart');
-    const ctx = canvas.getContext('2d');
+function generateProgressChart(habitId, habitData) {
+    const chartContainer = document.getElementById(`chart-${habitId}`);
+    const labelsContainer = document.getElementById(`labels-${habitId}`);
     
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!chartContainer || !labelsContainer) return;
     
-    // Get last 7 days of data
+    // Get last 7 days
     const last7Days = [];
     const today = new Date();
     
@@ -436,31 +477,26 @@ function updateProgressChart(habitData) {
         const dateString = date.toDateString();
         last7Days.push({
             date: date.getDate(),
+            month: date.getMonth() + 1,
+            year: date.getFullYear(),
             completed: habitData.completedDays.includes(dateString)
         });
     }
     
-    // Chart dimensions
-    const padding = 20;
-    const chartWidth = canvas.width - (padding * 2);
-    const chartHeight = canvas.height - (padding * 2);
-    const barWidth = chartWidth / 7;
+    // Clear containers
+    chartContainer.innerHTML = '';
+    labelsContainer.innerHTML = '';
     
-    // Draw bars
-    last7Days.forEach((day, index) => {
-        const x = padding + (index * barWidth) + (barWidth * 0.1);
-        const barHeight = day.completed ? chartHeight * 0.8 : chartHeight * 0.2;
-        const y = padding + chartHeight - barHeight;
+    // Create bars
+    last7Days.forEach(day => {
+        const bar = document.createElement('div');
+        bar.className = `chart-bar ${day.completed ? 'completed' : 'missed'}`;
+        bar.style.height = day.completed ? '100%' : '20%';
+        chartContainer.appendChild(bar);
         
-        // Draw bar
-        ctx.fillStyle = day.completed ? '#7ED321' : '#e0e0e0';
-        ctx.fillRect(x, y, barWidth * 0.8, barHeight);
-        
-        // Draw day label
-        ctx.fillStyle = '#666';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(day.date, x + (barWidth * 0.4), canvas.height - 5);
+        const label = document.createElement('div');
+        label.textContent = `${day.date}/${day.month}`;
+        labelsContainer.appendChild(label);
     });
 }
 
@@ -488,14 +524,20 @@ function updateDailyProgress() {
     const lastUpdate = localStorage.getItem('lastUpdate');
     
     if (lastUpdate !== today) {
-        // New day - update streak if needed
-        if (appData.currentHabit) {
-            const habitData = appData.habits[appData.currentHabit];
-            if (!habitData.completedDays.includes(today)) {
-                // Missed a day - reset streak
-                habitData.streak = 0;
+        // New day - check streaks
+        appData.activeHabits.forEach(habitId => {
+            const habitData = appData.habits[habitId];
+            if (habitData && habitData.active) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayString = yesterday.toDateString();
+                
+                // If they didn't complete yesterday and had a streak, reset it
+                if (!habitData.completedDays.includes(yesterdayString) && habitData.streak > 0) {
+                    habitData.streak = 0;
+                }
             }
-        }
+        });
         
         localStorage.setItem('lastUpdate', today);
         saveData();
