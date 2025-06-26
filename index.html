@@ -9,230 +9,21 @@
 </head>
 <body>
     <div id="app">
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="screen active">
-            <div class="loading-content">
-                <div class="loading-logo">
-                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=120&h=120&fit=crop&crop=center" alt="HabitFlow" class="loading-image">
-                    <h1>HabitFlow</h1>
-                </div>
-                <div class="loading-spinner"></div>
-                <p>Loading your habits...</p>
-            </div>
-        </div>
-
-        <!-- Welcome Screen -->
-        <div id="welcome-screen" class="screen">
-            <div class="welcome-content">
-                <div class="welcome-hero">
-                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop&crop=center" alt="HabitFlow" class="welcome-logo">
-                    <h1>Welcome to HabitFlow</h1>
-                    <p>Build positive habits and break negative ones with science-backed methods</p>
-                </div>
-                <div class="welcome-actions">
-                    <button class="primary-btn" onclick="navigateTo('signup')">Get Started</button>
-                    <button class="secondary-btn" onclick="navigateTo('login')">I have an account</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sign Up Screen -->
-        <div id="signup-screen" class="screen">
-            <div class="auth-container">
-                <div class="auth-header">
-                    <h2>Create Account</h2>
-                    <p>Start your habit journey today</p>
-                </div>
-                <form id="signup-form" class="auth-form">
-                    <div class="form-group">
-                        <label for="signup-name">Full Name</label>
-                        <input type="text" id="signup-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-email">Email Address</label>
-                        <input type="email" id="signup-email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-password">Password</label>
-                        <input type="password" id="signup-password" required minlength="6">
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-confirm-password">Confirm Password</label>
-                        <input type="password" id="signup-confirm-password" required>
-                    </div>
-                    <div class="form-group checkbox-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="share-progress" checked>
-                            <span class="checkmark"></span>
-                            Allow sharing my progress with friends (optional)
-                        </label>
-                    </div>
-                    <button type="submit" class="primary-btn full-width" id="signup-btn">
-                        Create Account
-                    </button>
-                </form>
-                <div class="auth-footer">
-                    <p>Already have an account? <a href="#" onclick="navigateTo('login')">Sign In</a></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Email Verification Screen -->
-        <div id="verification-screen" class="screen">
-            <div class="auth-container">
-                <div class="auth-header">
-                    <h2>Verify Your Email</h2>
-                    <p>We've sent a 6-digit code to <span id="verification-email"></span></p>
-                </div>
-                <form id="verification-form" class="auth-form">
-                    <div class="verification-input-container">
-                        <input type="text" class="verification-digit" maxlength="1" data-index="0">
-                        <input type="text" class="verification-digit" maxlength="1" data-index="1">
-                        <input type="text" class="verification-digit" maxlength="1" data-index="2">
-                        <input type="text" class="verification-digit" maxlength="1" data-index="3">
-                        <input type="text" class="verification-digit" maxlength="1" data-index="4">
-                        <input type="text" class="verification-digit" maxlength="1" data-index="5">
-                    </div>
-                    <button type="submit" class="primary-btn full-width" id="verify-btn">
-                        Verify Email
-                    </button>
-                </form>
-                <div class="auth-footer">
-                    <p>Didn't receive the code? <a href="#" onclick="resendVerificationCode()">Resend</a></p>
-                    <p><a href="#" onclick="navigateTo('signup')">← Back to Sign Up</a></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Login Screen -->
-        <div id="login-screen" class="screen">
-            <div class="auth-container">
-                <div class="auth-header">
-                    <h2>Welcome Back</h2>
-                    <p>Sign in to continue your habit journey</p>
-                </div>
-                <form id="login-form" class="auth-form">
-                    <div class="form-group">
-                        <label for="login-email">Email Address</label>
-                        <input type="email" id="login-email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="login-password">Password</label>
-                        <input type="password" id="login-password" required>
-                    </div>
-                    <button type="submit" class="primary-btn full-width" id="login-btn">
-                        Sign In
-                    </button>
-                </form>
-                <div class="auth-footer">
-                    <p><a href="#" onclick="navigateTo('forgot-password')">Forgot Password?</a></p>
-                    <p>Don't have an account? <a href="#" onclick="navigateTo('signup')">Sign Up</a></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Forgot Password Screen -->
-        <div id="forgot-password-screen" class="screen">
-            <div class="auth-container">
-                <div class="auth-header">
-                    <h2>Reset Password</h2>
-                    <p>Enter your email to receive a reset link</p>
-                </div>
-                <form id="forgot-password-form" class="auth-form">
-                    <div class="form-group">
-                        <label for="reset-email">Email Address</label>
-                        <input type="email" id="reset-email" required>
-                    </div>
-                    <button type="submit" class="primary-btn full-width" id="reset-btn">
-                        Send Reset Link
-                    </button>
-                </form>
-                <div class="auth-footer">
-                    <p><a href="#" onclick="navigateTo('login')">← Back to Sign In</a></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Profile Screen -->
-        <div id="profile-screen" class="screen">
-            <header class="header">
-                <div class="header-content">
-                    <button class="back-btn" onclick="navigateTo('home')">← Back</button>
-                    <h2>Profile</h2>
-                    <button class="logout-btn" onclick="logout()">Sign Out</button>
-                </div>
-            </header>
-            
-            <div class="profile-content">
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=center" alt="Profile" id="profile-avatar">
-                    </div>
-                    <div class="profile-info">
-                        <h3 id="profile-name">User Name</h3>
-                        <p id="profile-email">user@example.com</p>
-                        <div class="profile-stats">
-                            <div class="profile-stat">
-                                <span class="stat-number" id="profile-total-habits">0</span>
-                                <span class="stat-label">Total Habits</span>
-                            </div>
-                            <div class="profile-stat">
-                                <span class="stat-number" id="profile-active-habits">0</span>
-                                <span class="stat-label">Active</span>
-                            </div>
-                            <div class="profile-stat">
-                                <span class="stat-number" id="profile-completed-habits">0</span>
-                                <span class="stat-label">Completed</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="profile-settings">
-                    <h3>Settings</h3>
-                    <div class="setting-item">
-                        <label class="setting-label">
-                            <span>Share my progress with friends</span>
-                            <input type="checkbox" id="share-progress-setting">
-                            <span class="setting-toggle"></span>
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                        <label class="setting-label">
-                            <span>Daily reminder notifications</span>
-                            <input type="checkbox" id="notifications-setting" checked>
-                            <span class="setting-toggle"></span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="profile-actions">
-                    <button class="secondary-btn full-width" onclick="navigateTo('change-password')">Change Password</button>
-                    <button class="danger-btn full-width" onclick="deleteAccount()">Delete Account</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Home Screen -->
-        <div id="home-screen" class="screen">
+        <div id="home-screen" class="screen active">
             <header class="header">
                 <div class="header-content">
-                    <div class="header-left">
-                        <h1 class="app-title">HabitFlow</h1>
-                        <div class="greeting" id="greeting">Welcome back, User!</div>
-                    </div>
-                    <button class="profile-btn" onclick="navigateTo('profile')" id="profile-btn">
-                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=center" alt="Profile" class="profile-btn-image">
-                    </button>
-                </div>
-                <div class="stats">
-                    <div class="stat-item">
-                        <span class="stat-number" id="days-logged">0</span>
-                        <span class="stat-label">Days Logged</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="active-habits">0</span>
-                        <span class="stat-label">Active Habits</span>
+                    <h1 class="app-title">HabitFlow</h1>
+                    <div class="greeting" id="greeting">Welcome back, User!</div>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="days-logged">0</span>
+                            <span class="stat-label">Days Logged</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="active-habits">0</span>
+                            <span class="stat-label">Active Habits</span>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -441,7 +232,7 @@
     </div>
 
     <!-- Bottom Navigation -->
-    <nav class="bottom-nav" id="bottom-nav" style="display: none;">
+    <nav class="bottom-nav">
         <button class="nav-btn" onclick="navigateTo('home')" data-tab="home">
             <div class="nav-icon">
                 <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=24&h=24&fit=crop&crop=center" alt="Home">
@@ -467,9 +258,6 @@
             <span class="nav-label">Support</span>
         </button>
     </nav>
-
-    <!-- Toast Notifications -->
-    <div id="toast-container"></div>
 
     <script src="script.js"></script>
 </body>

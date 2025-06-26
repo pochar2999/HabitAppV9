@@ -1,30 +1,14 @@
-// Import modules
-import { initAuth, setupAuthForms, logout, deleteAccount, getCurrentUser, getUserProfile } from './src/auth.js'
-import { showToast } from './src/toast.js'
-import { db } from './src/supabase.js'
-
-// Make functions globally available
-window.logout = logout
-window.deleteAccount = deleteAccount
-window.showToast = showToast
-window.resendVerificationCode = async () => {
-  showToast('Verification code resent', 'success')
-}
-
 // App State Management
-let currentScreen = 'loading'
-let currentHabit = null
-let habitType = null
+let currentScreen = 'home';
+let currentHabit = null;
+let habitType = null;
 let appData = {
     user: 'User',
     daysLogged: 0,
     activeHabits: [],
     habits: {},
-    userProfile: null
-}
-
-// Make appData globally available
-window.appData = appData
+    dailyNotes: {}
+};
 
 // Habit Data with images
 const habitsData = {
@@ -130,227 +114,190 @@ const habitsData = {
         ],
         quote: 'The most precious thing you have is your attention. Guard it like your life depends on it. - Naval Ravikant'
     }
+};
+
+// Local Storage Functions
+function saveData() {
+    localStorage.setItem('habitFlowData', JSON.stringify(appData));
+}
+
+function loadData() {
+    const saved = localStorage.getItem('habitFlowData');
+    if (saved) {
+        appData = { ...appData, ...JSON.parse(saved) };
+    }
 }
 
 // Navigation Functions
 function navigateTo(screen) {
     // Hide current screen
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     
     // Show target screen
-    const targetScreen = document.getElementById(screen + '-screen')
-    if (targetScreen) {
-        targetScreen.classList.add('active')
-    }
+    document.getElementById(screen + '-screen').classList.add('active');
     
     // Update navigation state
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'))
-    const navBtn = document.querySelector(`[data-tab="${screen}"]`)
-    if (navBtn) {
-        navBtn.classList.add('active')
-    }
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-tab="${screen}"]`)?.classList.add('active');
     
-    currentScreen = screen
+    currentScreen = screen;
     
     // Update screen content
-    updateScreenContent(screen)
+    updateScreenContent(screen);
 }
-
-// Make navigateTo globally available
-window.navigateTo = navigateTo
 
 function goBack() {
     if (currentScreen === 'strategy') {
-        navigateTo(habitType === 'build' ? 'build-habits' : 'break-habits')
+        navigateTo(habitType === 'build' ? 'build-habits' : 'break-habits');
     } else {
-        navigateTo('home')
+        navigateTo('home');
     }
 }
-
-window.goBack = goBack
 
 function updateScreenContent(screen) {
     switch (screen) {
         case 'home':
-            updateHomeScreen()
-            break
+            updateHomeScreen();
+            break;
         case 'habits':
-            updateHabitsScreen()
-            break
+            updateHabitsScreen();
+            break;
         case 'progress':
-            updateProgressScreen()
-            break
-        case 'profile':
-            updateProfileScreen()
-            break
+            updateProgressScreen();
+            break;
     }
 }
 
 // Home Screen Functions
 function updateHomeScreen() {
-    const greeting = document.getElementById('greeting')
-    const daysLogged = document.getElementById('days-logged')
-    const activeHabits = document.getElementById('active-habits')
+    const greeting = document.getElementById('greeting');
+    const daysLogged = document.getElementById('days-logged');
+    const activeHabits = document.getElementById('active-habits');
     
-    if (greeting) greeting.textContent = `Welcome back, ${appData.user}!`
-    if (daysLogged) daysLogged.textContent = appData.daysLogged
-    if (activeHabits) activeHabits.textContent = appData.activeHabits.length
-}
-
-window.updateHomeScreen = updateHomeScreen
-
-// Profile Screen Functions
-function updateProfileScreen() {
-    const user = getCurrentUser()
-    const profile = getUserProfile()
-    
-    if (!user || !profile) return
-    
-    document.getElementById('profile-name').textContent = profile.name
-    document.getElementById('profile-email').textContent = profile.email
-    document.getElementById('profile-total-habits').textContent = Object.keys(appData.habits).length
-    document.getElementById('profile-active-habits').textContent = appData.activeHabits.length
-    document.getElementById('profile-completed-habits').textContent = 
-        Object.values(appData.habits).filter(h => !h.active).length
-    
-    // Update settings
-    document.getElementById('share-progress-setting').checked = profile.share_progress || false
+    greeting.textContent = `Welcome back, ${appData.user}!`;
+    daysLogged.textContent = appData.daysLogged;
+    activeHabits.textContent = appData.activeHabits.length;
 }
 
 // Search Functions
 function searchHabits(type) {
-    const searchInput = document.getElementById(`${type}-search`)
-    const habitsList = document.getElementById(`${type}-habits-list`)
-    const query = searchInput.value.toLowerCase()
+    const searchInput = document.getElementById(`${type}-search`);
+    const habitsList = document.getElementById(`${type}-habits-list`);
+    const query = searchInput.value.toLowerCase();
     
-    const cards = habitsList.querySelectorAll('.habit-card')
+    const cards = habitsList.querySelectorAll('.habit-card');
     cards.forEach(card => {
-        const habitName = card.querySelector('h4').textContent.toLowerCase()
-        const habitDescription = card.querySelector('p').textContent.toLowerCase()
+        const habitName = card.querySelector('h4').textContent.toLowerCase();
+        const habitDescription = card.querySelector('p').textContent.toLowerCase();
         
         if (habitName.includes(query) || habitDescription.includes(query)) {
-            card.style.display = 'flex'
+            card.style.display = 'flex';
         } else {
-            card.style.display = 'none'
+            card.style.display = 'none';
         }
-    })
+    });
 }
-
-window.searchHabits = searchHabits
 
 // Habit Selection Functions
 function selectHabit(habitId, type) {
-    currentHabit = habitId
-    habitType = type
+    currentHabit = habitId;
+    habitType = type;
     
-    const habit = habitsData[habitId]
-    if (!habit) return
+    const habit = habitsData[habitId];
+    if (!habit) return;
     
     // Update strategy screen
-    document.getElementById('strategy-title').textContent = habit.name + ' Strategy'
-    document.getElementById('habit-description').textContent = habit.description
+    document.getElementById('strategy-title').textContent = habit.name + ' Strategy';
+    document.getElementById('habit-description').textContent = habit.description;
     
     // Update methods
-    const methodsList = document.getElementById('methods-list')
-    methodsList.innerHTML = ''
+    const methodsList = document.getElementById('methods-list');
+    methodsList.innerHTML = '';
     
     habit.methods.forEach(method => {
-        const methodCard = document.createElement('div')
-        methodCard.className = 'method-card'
+        const methodCard = document.createElement('div');
+        methodCard.className = 'method-card';
         methodCard.innerHTML = `
             <div class="method-title">${method.title}</div>
             <div class="method-description">${method.description}</div>
-        `
-        methodsList.appendChild(methodCard)
-    })
+        `;
+        methodsList.appendChild(methodCard);
+    });
     
     // Show quote for break habits
-    const quoteSection = document.getElementById('quote-section')
+    const quoteSection = document.getElementById('quote-section');
     if (habit.quote) {
-        document.getElementById('motivational-quote').textContent = habit.quote
-        quoteSection.style.display = 'block'
+        document.getElementById('motivational-quote').textContent = habit.quote;
+        quoteSection.style.display = 'block';
     } else {
-        quoteSection.style.display = 'none'
+        quoteSection.style.display = 'none';
     }
     
     // Update start button text
     document.getElementById('start-habit-btn').textContent = 
-        type === 'build' ? 'Start Habit Plan' : 'Start Breaking Plan'
+        type === 'build' ? 'Start Habit Plan' : 'Start Breaking Plan';
     
-    navigateTo('strategy')
+    navigateTo('strategy');
 }
 
-window.selectHabit = selectHabit
-
-async function startHabit() {
-    if (!currentHabit) return
+function startHabit() {
+    if (!currentHabit) return;
     
-    const user = getCurrentUser()
-    if (!user) {
-        showToast('Please sign in to start tracking habits', 'error')
-        return
-    }
+    const today = new Date().toDateString();
     
-    try {
-        // Create habit in database
-        const { data: newHabit, error } = await db.createHabit(user.id, currentHabit, habitType)
-        
-        if (error) {
-            throw error
-        }
-        
-        // Update local app data
-        const today = new Date().toDateString()
-        
+    // Initialize habit data
+    if (!appData.habits[currentHabit]) {
         appData.habits[currentHabit] = {
-            id: newHabit.id,
             startDate: today,
             streak: 0,
             bestStreak: 0,
             completedDays: [],
             totalDays: 0,
+            currentMethod: 0,
             active: true
-        }
+        };
         
+        // Add to active habits if not already there
         if (!appData.activeHabits.includes(currentHabit)) {
-            appData.activeHabits.push(currentHabit)
+            appData.activeHabits.push(currentHabit);
         }
-        
-        showToast('Habit plan started successfully!', 'success')
-        navigateTo('habits')
-    } catch (error) {
-        console.error('Error starting habit:', error)
-        showToast('Failed to start habit plan', 'error')
+    } else {
+        // Reactivate habit if it was inactive
+        appData.habits[currentHabit].active = true;
+        if (!appData.activeHabits.includes(currentHabit)) {
+            appData.activeHabits.push(currentHabit);
+        }
     }
+    
+    saveData();
+    navigateTo('habits');
 }
-
-window.startHabit = startHabit
 
 // Habits Management Screen Functions
 function updateHabitsScreen() {
-    const noHabitsMessage = document.getElementById('no-habits-message')
-    const activeHabitsList = document.getElementById('active-habits-list')
+    const noHabitsMessage = document.getElementById('no-habits-message');
+    const activeHabitsList = document.getElementById('active-habits-list');
     
     if (appData.activeHabits.length === 0) {
-        noHabitsMessage.style.display = 'block'
-        activeHabitsList.innerHTML = ''
-        return
+        noHabitsMessage.style.display = 'block';
+        activeHabitsList.innerHTML = '';
+        return;
     }
     
-    noHabitsMessage.style.display = 'none'
-    activeHabitsList.innerHTML = ''
+    noHabitsMessage.style.display = 'none';
+    activeHabitsList.innerHTML = '';
     
     appData.activeHabits.forEach(habitId => {
-        const habit = habitsData[habitId]
-        const habitData = appData.habits[habitId]
+        const habit = habitsData[habitId];
+        const habitData = appData.habits[habitId];
         
-        if (!habit || !habitData || !habitData.active) return
+        if (!habit || !habitData || !habitData.active) return;
         
-        const today = new Date().toDateString()
-        const completedToday = habitData.completedDays.includes(today)
+        const today = new Date().toDateString();
+        const completedToday = habitData.completedDays.includes(today);
         
-        const habitItem = document.createElement('div')
-        habitItem.className = 'habit-item'
+        const habitItem = document.createElement('div');
+        habitItem.className = 'habit-item';
         habitItem.innerHTML = `
             <div class="habit-header">
                 <img src="${habit.image}" alt="${habit.name}" class="habit-item-image">
@@ -377,138 +324,107 @@ function updateHabitsScreen() {
                     ''
                 }
             </div>
-        `
+        `;
         
-        activeHabitsList.appendChild(habitItem)
-    })
+        activeHabitsList.appendChild(habitItem);
+    });
 }
 
-async function markHabitComplete(habitId) {
-    const today = new Date().toDateString()
-    const habitData = appData.habits[habitId]
+function markHabitComplete(habitId) {
+    const today = new Date().toDateString();
+    const habitData = appData.habits[habitId];
     
     if (!habitData || habitData.completedDays.includes(today)) {
-        return
+        return;
     }
     
-    const user = getCurrentUser()
-    if (!user) {
-        showToast('Please sign in to track habits', 'error')
-        return
+    // Mark as completed
+    habitData.completedDays.push(today);
+    habitData.streak += 1;
+    habitData.totalDays += 1;
+    
+    if (habitData.streak > habitData.bestStreak) {
+        habitData.bestStreak = habitData.streak;
     }
     
-    try {
-        // Mark as completed in database
-        const { error } = await db.markHabitComplete(habitData.id)
-        
-        if (error) {
-            throw error
-        }
-        
-        // Update local data
-        habitData.completedDays.push(today)
-        habitData.streak += 1
-        habitData.totalDays += 1
-        
-        if (habitData.streak > habitData.bestStreak) {
-            habitData.bestStreak = habitData.streak
-        }
-        
-        // Update habit in database
-        await db.updateHabit(habitData.id, {
-            streak: habitData.streak,
-            best_streak: habitData.bestStreak,
-            total_days: habitData.totalDays
-        })
-        
-        appData.daysLogged += 1
-        
-        updateHabitsScreen()
-        showSuccessMessage()
-    } catch (error) {
-        console.error('Error marking habit complete:', error)
-        showToast('Failed to mark habit as complete', 'error')
-    }
+    // Increment days logged
+    appData.daysLogged += 1;
+    
+    saveData();
+    updateHabitsScreen();
+    showSuccessMessage();
 }
 
-window.markHabitComplete = markHabitComplete
-
-async function undoHabitComplete(habitId) {
-    const today = new Date().toDateString()
-    const habitData = appData.habits[habitId]
+function undoHabitComplete(habitId) {
+    const today = new Date().toDateString();
+    const habitData = appData.habits[habitId];
     
     if (!habitData || !habitData.completedDays.includes(today)) {
-        return
+        return;
     }
     
-    try {
-        // Remove completion from database
-        const { error } = await db.removeHabitCompletion(habitData.id, today)
-        
-        if (error) {
-            throw error
-        }
-        
-        // Update local data
-        habitData.completedDays = habitData.completedDays.filter(date => date !== today)
-        habitData.streak = Math.max(0, habitData.streak - 1)
-        habitData.totalDays = Math.max(0, habitData.totalDays - 1)
-        
-        // Update habit in database
-        await db.updateHabit(habitData.id, {
-            streak: habitData.streak,
-            total_days: habitData.totalDays
-        })
-        
-        appData.daysLogged = Math.max(0, appData.daysLogged - 1)
-        
-        updateHabitsScreen()
-        showToast('Habit completion undone', 'info')
-    } catch (error) {
-        console.error('Error undoing habit completion:', error)
-        showToast('Failed to undo habit completion', 'error')
-    }
+    // Remove today from completed days
+    habitData.completedDays = habitData.completedDays.filter(date => date !== today);
+    habitData.streak = Math.max(0, habitData.streak - 1);
+    habitData.totalDays = Math.max(0, habitData.totalDays - 1);
+    
+    // Decrement days logged
+    appData.daysLogged = Math.max(0, appData.daysLogged - 1);
+    
+    saveData();
+    updateHabitsScreen();
 }
 
-window.undoHabitComplete = undoHabitComplete
-
 function showSuccessMessage() {
-    const messages = [
-        'Great job! Keep it up! 🎉',
-        'You\'re building momentum! 💪',
-        'Consistency is key! ⭐',
-        'Another step forward! 🚀'
-    ]
+    const message = document.createElement('div');
+    message.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 20px;
+        font-size: 18px;
+        font-weight: 600;
+        z-index: 1000;
+        box-shadow: 0 8px 32px rgba(72, 187, 120, 0.4);
+        animation: fadeIn 0.3s ease-in;
+    `;
+    message.textContent = 'Great job! Keep it up! 🎉';
+    document.body.appendChild(message);
     
-    const message = messages[Math.floor(Math.random() * messages.length)]
-    showToast(message, 'success')
+    setTimeout(() => {
+        message.remove();
+    }, 2000);
 }
 
 // Progress Screen Functions
 function updateProgressScreen() {
-    const noProgressMessage = document.getElementById('no-progress-message')
-    const progressHabitsList = document.getElementById('progress-habits-list')
+    const noProgressMessage = document.getElementById('no-progress-message');
+    const progressHabitsList = document.getElementById('progress-habits-list');
     
     if (appData.activeHabits.length === 0) {
-        noProgressMessage.style.display = 'block'
-        progressHabitsList.innerHTML = ''
-        return
+        noProgressMessage.style.display = 'block';
+        progressHabitsList.innerHTML = '';
+        return;
     }
     
-    noProgressMessage.style.display = 'none'
-    progressHabitsList.innerHTML = ''
+    noProgressMessage.style.display = 'none';
+    progressHabitsList.innerHTML = '';
     
     appData.activeHabits.forEach(habitId => {
-        const habit = habitsData[habitId]
-        const habitData = appData.habits[habitId]
+        const habit = habitsData[habitId];
+        const habitData = appData.habits[habitId];
         
-        if (!habit || !habitData || !habitData.active) return
+        if (!habit || !habitData || !habitData.active) return;
         
         const completionRate = habitData.totalDays > 0 ? 
-            Math.round((habitData.completedDays.length / habitData.totalDays) * 100) : 0
+            Math.round((habitData.completedDays.length / habitData.totalDays) * 100) : 0;
         
-        const progressCard = document.createElement('div')
-        progressCard.className = 'progress-habit-card'
+        const progressCard = document.createElement('div');
+        progressCard.className = 'progress-habit-card';
         progressCard.innerHTML = `
             <div class="progress-habit-header">
                 <img src="${habit.image}" alt="${habit.name}" class="progress-habit-image">
@@ -536,80 +452,97 @@ function updateProgressScreen() {
                 <div class="progress-chart" id="chart-${habitId}"></div>
                 <div class="chart-labels" id="labels-${habitId}"></div>
             </div>
-        `
+        `;
         
-        progressHabitsList.appendChild(progressCard)
+        progressHabitsList.appendChild(progressCard);
         
         // Generate chart for this habit
-        generateProgressChart(habitId, habitData)
-    })
+        generateProgressChart(habitId, habitData);
+    });
 }
 
 function generateProgressChart(habitId, habitData) {
-    const chartContainer = document.getElementById(`chart-${habitId}`)
-    const labelsContainer = document.getElementById(`labels-${habitId}`)
+    const chartContainer = document.getElementById(`chart-${habitId}`);
+    const labelsContainer = document.getElementById(`labels-${habitId}`);
     
-    if (!chartContainer || !labelsContainer) return
+    if (!chartContainer || !labelsContainer) return;
     
     // Get last 7 days
-    const last7Days = []
-    const today = new Date()
+    const last7Days = [];
+    const today = new Date();
     
     for (let i = 6; i >= 0; i--) {
-        const date = new Date(today)
-        date.setDate(date.getDate() - i)
-        const dateString = date.toDateString()
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateString = date.toDateString();
         last7Days.push({
             date: date.getDate(),
             month: date.getMonth() + 1,
             year: date.getFullYear(),
             completed: habitData.completedDays.includes(dateString)
-        })
+        });
     }
     
     // Clear containers
-    chartContainer.innerHTML = ''
-    labelsContainer.innerHTML = ''
+    chartContainer.innerHTML = '';
+    labelsContainer.innerHTML = '';
     
     // Create bars
     last7Days.forEach(day => {
-        const bar = document.createElement('div')
-        bar.className = `chart-bar ${day.completed ? 'completed' : 'missed'}`
-        bar.style.height = day.completed ? '100%' : '20%'
-        chartContainer.appendChild(bar)
+        const bar = document.createElement('div');
+        bar.className = `chart-bar ${day.completed ? 'completed' : 'missed'}`;
+        bar.style.height = day.completed ? '100%' : '20%';
+        chartContainer.appendChild(bar);
         
-        const label = document.createElement('div')
-        label.textContent = `${day.date}/${day.month}`
-        labelsContainer.appendChild(label)
-    })
+        const label = document.createElement('div');
+        label.textContent = `${day.date}/${day.month}`;
+        labelsContainer.appendChild(label);
+    });
 }
 
 // Initialize App
-async function initApp() {
-    try {
-        // Show loading screen
-        navigateTo('loading')
+function initApp() {
+    loadData();
+    
+    // Set up navigation
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.getAttribute('data-tab');
+            navigateTo(tab);
+        });
+    });
+    
+    // Set initial screen
+    navigateTo('home');
+    
+    // Update daily progress
+    updateDailyProgress();
+}
+
+function updateDailyProgress() {
+    const today = new Date().toDateString();
+    const lastUpdate = localStorage.getItem('lastUpdate');
+    
+    if (lastUpdate !== today) {
+        // New day - check streaks
+        appData.activeHabits.forEach(habitId => {
+            const habitData = appData.habits[habitId];
+            if (habitData && habitData.active) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayString = yesterday.toDateString();
+                
+                // If they didn't complete yesterday and had a streak, reset it
+                if (!habitData.completedDays.includes(yesterdayString) && habitData.streak > 0) {
+                    habitData.streak = 0;
+                }
+            }
+        });
         
-        // Setup auth forms
-        setupAuthForms()
-        
-        // Initialize authentication
-        await initAuth()
-        
-        // Set up navigation
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tab = btn.getAttribute('data-tab')
-                navigateTo(tab)
-            })
-        })
-        
-    } catch (error) {
-        console.error('App initialization error:', error)
-        showToast('Failed to initialize app', 'error')
-        navigateTo('welcome')
+        localStorage.setItem('lastUpdate', today);
+        saveData();
     }
 }
 
 // Initialize when page loads
-document.addEventListener('DOMContentLoaded', initApp)
+document.addEventListener('DOMContentLoaded', initApp);
