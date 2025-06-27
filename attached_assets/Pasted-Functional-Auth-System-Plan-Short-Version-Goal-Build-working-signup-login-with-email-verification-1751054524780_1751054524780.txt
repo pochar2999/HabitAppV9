@@ -1,0 +1,100 @@
+Functional Auth System Plan (Short Version)
+Goal: Build working signup/login with email verification using Firebase. Make sure actions work (no "nothing happens" bugs).
+
+Step 1: Firebase Setup
+Go to firebase.google.com → Create Project
+
+Enable Email/Password sign-in under Authentication → Sign-in method
+
+Enable Firestore Database
+
+Turn on Email Verification in Authentication → Templates
+
+Copy config from Project Settings → General
+
+Step 2: Frontend Setup (Replit or VS Code)
+Install Firebase:
+
+bash
+Copy
+Edit
+npm install firebase
+Initialize Firebase in JS:
+
+js
+Copy
+Edit
+import { initializeApp } from "firebase/app";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+Step 3: Signup Page (with Email Code)
+HTML:
+
+html
+Copy
+Edit
+<form id="signup-form">
+  <input type="text" id="name" />
+  <input type="email" id="email" />
+  <input type="password" id="password" />
+  <button type="submit">Sign Up</button>
+</form>
+<p id="signup-msg"></p>
+JS:
+
+js
+Copy
+Edit
+signupForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = emailInput.value;
+  const pass = passwordInput.value;
+  const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+  await sendEmailVerification(userCred.user);
+  signupMsg.textContent = "Verification sent";
+});
+Step 4: Login Page
+HTML:
+
+html
+Copy
+Edit
+<form id="login-form">
+  <input type="email" id="login-email" />
+  <input type="password" id="login-password" />
+  <button type="submit">Log In</button>
+</form>
+<p id="login-msg"></p>
+JS:
+
+js
+Copy
+Edit
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = emailInput.value;
+  const pass = passwordInput.value;
+  const userCred = await signInWithEmailAndPassword(auth, email, pass);
+  if (!userCred.user.emailVerified) {
+    loginMsg.textContent = "Verify your email first";
+  } else {
+    window.location.href = "home.html";
+  }
+});
+Step 5: Optional – Save Profile to Firestore
+js
+Copy
+Edit
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+const db = getFirestore(app);
+
+await setDoc(doc(db, "users", userCred.user.uid), {
+  name: nameInput.value,
+  email: userCred.user.email,
+  habitsActive: [],
+  habitsCompleted: [],
+  friends: [],
+  createdAt: new Date().toISOString()
+});

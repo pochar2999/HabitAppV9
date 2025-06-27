@@ -1,0 +1,134 @@
+Goal: Working login/signup system (with email verification), built on Firebase/Supabase, that stores users and lets them log in with a real account.
+
+STEP 1: Set Up Backend (Use Firebase — recommended)
+A. Create Firebase Project:
+Go to https://console.firebase.google.com
+
+Click “Create Project” → enable Email/Password auth in Authentication → Sign-in method
+
+Under Firestore Database, click “Create database” (production or test mode)
+
+B. Enable Email Verification:
+In Firebase → Authentication → Templates → Turn on "Email verification"
+
+Customize sender email if needed
+
+C. Copy Firebase Config:
+Under Project Settings → General, copy the config like:
+
+js
+Copy
+Edit
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "your-app.firebaseapp.com",
+  projectId: "your-app",
+  storageBucket: "your-app.appspot.com",
+  messagingSenderId: "xxxxx",
+  appId: "1:xxxxx:web:xxxxx"
+};
+STEP 2: Set Up Frontend (Replit or VS Code)
+A. Install Firebase SDK:
+If using Replit (Node + HTML + JS):
+
+bash
+Copy
+Edit
+npm install firebase
+B. Add Firebase Init:
+js
+Copy
+Edit
+import { initializeApp } from "firebase/app";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification
+} from "firebase/auth";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+STEP 3: Signup Page (with Email Verification)
+HTML (signup.html)
+html
+Copy
+Edit
+<form id="signup-form">
+  <input type="text" id="name" placeholder="Name" required />
+  <input type="email" id="email" placeholder="Email" required />
+  <input type="password" id="password" placeholder="Password" required />
+  <button type="submit">Sign Up</button>
+</form>
+<p id="signup-msg"></p>
+JS Logic (signup.js)
+js
+Copy
+Edit
+document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+    await sendEmailVerification(userCred.user);
+    document.getElementById('signup-msg').textContent = "Verification email sent!";
+  } catch (err) {
+    document.getElementById('signup-msg').textContent = "Error: " + err.message;
+  }
+});
+STEP 4: Login Page
+HTML (login.html)
+html
+Copy
+Edit
+<form id="login-form">
+  <input type="email" id="login-email" placeholder="Email" required />
+  <input type="password" id="login-password" placeholder="Password" required />
+  <button type="submit">Log In</button>
+</form>
+<p id="login-msg"></p>
+JS Logic (login.js)
+js
+Copy
+Edit
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-password').value;
+
+  try {
+    const userCred = await signInWithEmailAndPassword(auth, email, pass);
+    if (!userCred.user.emailVerified) {
+      document.getElementById('login-msg').textContent = "Please verify your email.";
+    } else {
+      window.location.href = "home.html";
+    }
+  } catch (err) {
+    document.getElementById('login-msg').textContent = "Error: " + err.message;
+  }
+});
+STEP 5: Store User Profile in Firestore (Optional but recommended)
+js
+Copy
+Edit
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+const db = getFirestore(app);
+
+await setDoc(doc(db, "users", userCred.user.uid), {
+  name: document.getElementById('name').value,
+  email: userCred.user.email,
+  habitsActive: [],
+  habitsCompleted: [],
+  friends: [],
+  createdAt: new Date().toISOString()
+});
+STEP 6: Test Everything (Checklist)
+✅ Task	Result You Should See
+Sign up with valid email	User created in Firebase
+Email sent	"Verification email sent!"
+Login with wrong password	Shows error
+Login without verification	Blocks and says “Verify email”
+Login after verification	Redirects to Home page
+Data visible in Firestore	Name, email, UID, habits, etc.
