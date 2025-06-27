@@ -12,14 +12,14 @@
   </form>
 
   <script type="module">
-    import { signup } from './auth.js';
+    import { signUp } from './auth.js';
 
     const form = document.getElementById('signup-form');
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const pass = document.getElementById('password').value;
-      signup(email, pass);
+      signUp(email, pass);
     });
   </script>
 </body>
