@@ -779,47 +779,6 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Responsive Design */
-@media (min-width: 768px) {
-    #app {
-        max-width: 768px;
-    }
-    
-    .home-content {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 32px;
-        padding: 60px 40px;
-    }
-    
-    .habits-list {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        padding: 0 40px 40px;
-    }
-    
-    .progress-stats {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    
-    .bottom-nav {
-        max-width: 768px;
-    }
-}
-
-@media (min-width: 1024px) {
-    .home-content {
-        padding: 80px 60px;
-    }
-    
-    .strategy-content,
-    .habits-content,
-    .progress-content,
-    .hotline-content {
-        padding: 40px;
-    }
-}
-
 /* Authentication Styles */
 .auth-container {
     min-height: 100vh;
@@ -952,6 +911,127 @@ body {
 
 .auth-link a:hover {
     text-decoration: underline;
+}
+
+/* Profile Styles */
+.profile-content {
+    margin-top: 20px;
+}
+
+.profile-section {
+    margin-bottom: 32px;
+}
+
+.profile-section h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+}
+
+.profile-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.05);
+}
+
+.profile-item:last-child {
+    border-bottom: none;
+}
+
+.profile-item label {
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 14px;
+}
+
+.profile-item span {
+    color: #718096;
+    font-size: 14px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.stat-card .stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 4px;
+}
+
+.stat-card .stat-label {
+    color: #718096;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.profile-actions {
+    margin-top: 32px;
+}
+
+.verification-content {
+    text-align: center;
+}
+
+.verification-icon {
+    margin-bottom: 20px;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    #app {
+        max-width: 768px;
+    }
+    
+    .home-content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px;
+        padding: 60px 40px;
+    }
+    
+    .habits-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 0 40px 40px;
+    }
+    
+    .progress-stats {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .bottom-nav {
+        max-width: 768px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .home-content {
+        padding: 80px 60px;
+    }
+    
+    .strategy-content,
+    .habits-content,
+    .progress-content,
+    .hotline-content {
+        padding: 40px;
+    }
 }
 
 /* Utility Classes */

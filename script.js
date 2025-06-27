@@ -170,13 +170,11 @@ function updateScreenContent(screen) {
 
 // Home Screen Functions
 function updateHomeScreen() {
-    const greeting = document.getElementById('greeting');
     const daysLogged = document.getElementById('days-logged');
     const activeHabits = document.getElementById('active-habits');
     
-    greeting.textContent = `Welcome back, ${appData.user}!`;
-    daysLogged.textContent = appData.daysLogged;
-    activeHabits.textContent = appData.activeHabits.length;
+    if (daysLogged) daysLogged.textContent = appData.daysLogged;
+    if (activeHabits) activeHabits.textContent = appData.activeHabits.length;
 }
 
 // Search Functions

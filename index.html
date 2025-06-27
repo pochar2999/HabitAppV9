@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
     <div id="app">
         <!-- Home Screen -->
@@ -26,6 +25,7 @@
                             <span class="stat-label">Active Habits</span>
                         </div>
                     </div>
+                    <button id="profile-btn" class="profile-btn">Profile</button>
                 </div>
             </header>
             
@@ -261,5 +261,41 @@
     </nav>
 
     <script src="script.js"></script>
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged } from 'firebase/auth';
+        import { doc, getDoc } from 'firebase/firestore';
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user && user.emailVerified) {
+                // User is authenticated and verified
+                const greeting = document.getElementById("greeting");
+                if (greeting) {
+                    try {
+                        const docRef = doc(db, "users", user.uid);
+                        const docSnap = await getDoc(docRef);
+                        const userData = docSnap.exists() ? docSnap.data() : null;
+                        const displayName = userData?.name || user.displayName || user.email.split('@')[0];
+                        greeting.textContent = `Welcome back, ${displayName}!`;
+                    } catch (error) {
+                        console.error('Error loading user data:', error);
+                        greeting.textContent = `Welcome back, ${user.email.split('@')[0]}!`;
+                    }
+                }
+                
+                // Show profile button
+                const profileBtn = document.getElementById('profile-btn');
+                if (profileBtn) {
+                    profileBtn.style.display = 'block';
+                    profileBtn.addEventListener('click', () => {
+                        window.location.href = 'profile.html';
+                    });
+                }
+            } else {
+                // User is not authenticated, redirect to login
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
 </body>
 </html>
