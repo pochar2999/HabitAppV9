@@ -8,8 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-
-    
 <body>
     <div id="app">
         <!-- Home Screen -->
@@ -263,23 +261,5 @@
     </nav>
 
     <script src="script.js"></script>
-
-    <script type="module">
-  import { auth } from './firebase-config.js';
-  import { onAuthStateChanged } from 'firebase/auth';
-
-  onAuthStateChanged(auth, (user) => {
-    if (user && user.emailVerified) {
-      const greeting = document.getElementById("greeting");
-      if (greeting) {
-        greeting.textContent = `Welcome back, ${user.displayName || user.email.split('@')[0]}!`;
-      }
-    } else {
-      window.location.href = 'login.html';
-    }
-  });
-</script>
-
-     
 </body>
 </html>

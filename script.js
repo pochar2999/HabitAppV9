@@ -502,66 +502,21 @@ function generateProgressChart(habitId, habitData) {
 
 // Initialize App
 function initApp() {
-    // Check authentication state
-    import('./auth.js').then(({ onAuthChange, logout }) => {
-        onAuthChange((user) => {
-            if (user && user.emailVerified) {
-                // User is authenticated and verified
-                loadData();
-                
-                // Set up navigation
-                document.querySelectorAll('.nav-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const tab = btn.getAttribute('data-tab');
-                        navigateTo(tab);
-                    });
-                });
-                
-                // Add logout functionality
-                addLogoutButton();
-                
-                // Set initial screen
-                navigateTo('home');
-                
-                // Update daily progress
-                updateDailyProgress();
-            } else {
-                // User is not authenticated, redirect to login
-                window.location.href = 'login.html';
-            }
+    loadData();
+    
+    // Set up navigation
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.getAttribute('data-tab');
+            navigateTo(tab);
         });
     });
-}
-
-function addLogoutButton() {
-    const header = document.querySelector('.header-content');
-    if (header && !document.getElementById('logout-btn')) {
-        const logoutBtn = document.createElement('button');
-        logoutBtn.id = 'logout-btn';
-        logoutBtn.textContent = 'Logout';
-        logoutBtn.style.cssText = `
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.25);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-        `;
-        
-        logoutBtn.addEventListener('click', async () => {
-            const { logout } = await import('./auth.js');
-            await logout();
-            window.location.href = 'login.html';
-        });
-        
-        header.appendChild(logoutBtn);
-    }
+    
+    // Set initial screen
+    navigateTo('home');
+    
+    // Update daily progress
+    updateDailyProgress();
 }
 
 function updateDailyProgress() {
