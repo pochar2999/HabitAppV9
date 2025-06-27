@@ -7,6 +7,22 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
+<script type="module">
+  import { auth } from './firebase-config.js';
+  import { onAuthStateChanged } from 'firebase/auth';
+
+  onAuthStateChanged(auth, (user) => {
+    if (user && user.emailVerified) {
+      const greeting = document.getElementById("greeting");
+      greeting.textContent = `Welcome back, ${user.displayName || user.email.split('@')[0]}!`;
+    } else {
+      // Not logged in or not verified → send to login page
+      window.location.href = 'login.html';
+    }
+  });
+</script>
+    
 <body>
     <div id="app">
         <!-- Home Screen -->
