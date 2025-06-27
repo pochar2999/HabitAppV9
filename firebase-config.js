@@ -1,23 +1,17 @@
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-
-// Replace with your Firebase config from Project Settings > General
 const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "your-app-id"
+  apiKey: "AIzaSyAK3KSNQ60sZStGZ5ir_fn6VWPBkzUd_Oo",
+  authDomain: "habit-app-f43cc.firebaseapp.com",
+  projectId: "habit-app-f43cc",
+  storageBucket: "habit-app-f43cc.firebasestorage.app",
+  messagingSenderId: "387442825456",
+  appId: "1:387442825456:web:5ff306ef842351197d4a35",
+  measurementId: "G-X442N3W6V1"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-// Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app);
-
-// Initialize Cloud Firestore and get a reference to the service
-export const db = getFirestore(app);
+export { auth };
