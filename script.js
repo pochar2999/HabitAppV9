@@ -116,82 +116,10 @@ const habitsData = {
     }
 };
 
-// Firebase imports for data persistence
-let auth, db;
-let saveUserData, loadUserData;
-
-// Initialize Firebase functions when available
-function initializeFirebase() {
-    try {
-        if (window.auth && window.db) {
-            auth = window.auth;
-            db = window.db;
-            
-            // Import Firebase functions
-            import('./src/firebase-config.js').then(module => {
-                auth = module.auth;
-                db = module.db;
-                
-                import('firebase/firestore').then(firestoreModule => {
-                    const { doc, setDoc, getDoc } = firestoreModule;
-                    
-                    // Data persistence functions
-                    saveUserData = async function() {
-                        const currentUser = window.getCurrentUser?.();
-                        if (!currentUser) return;
-                        
-                        try {
-                            const userDocRef = doc(db, "users", currentUser.uid);
-                            await setDoc(userDocRef, {
-                                appData: appData,
-                                lastUpdated: new Date()
-                            }, { merge: true });
-                        } catch (error) {
-                            console.error('Error saving user data:', error);
-                        }
-                    };
-
-                    loadUserData = async function() {
-                        const currentUser = window.getCurrentUser?.();
-                        if (!currentUser) return;
-                        
-                        try {
-                            const userDocRef = doc(db, "users", currentUser.uid);
-                            const userDocSnap = await getDoc(userDocRef);
-                            
-                            if (userDocSnap.exists()) {
-                                const userData = userDocSnap.data();
-                                if (userData.appData) {
-                                    appData = { ...appData, ...userData.appData };
-                                }
-                            }
-                        } catch (error) {
-                            console.error('Error loading user data:', error);
-                        }
-                    };
-                });
-            });
-        }
-    } catch (error) {
-        console.log('Firebase not available, using localStorage fallback');
-        // Fallback to localStorage
-        saveUserData = function() {
-            localStorage.setItem('habitFlowData', JSON.stringify(appData));
-        };
-        
-        loadUserData = function() {
-            const saved = localStorage.getItem('habitFlowData');
-            if (saved) {
-                appData = { ...appData, ...JSON.parse(saved) };
-            }
-        };
-    }
-}
-
-// Updated save function
+// Data persistence functions
 function saveData() {
-    if (saveUserData) {
-        saveUserData();
+    if (window.authManager && window.authManager.getCurrentUser()) {
+        window.authManager.saveUserData();
     } else {
         // Fallback to localStorage
         localStorage.setItem('habitFlowData', JSON.stringify(appData));
@@ -440,6 +368,7 @@ function markHabitComplete(habitId) {
     
     saveData();
     updateHabitsScreen();
+    updateHomeScreen(); // Update home screen stats
     showSuccessMessage();
 }
 
@@ -461,6 +390,7 @@ function undoHabitComplete(habitId) {
     
     saveData();
     updateHabitsScreen();
+    updateHomeScreen(); // Update home screen stats
 }
 
 function showSuccessMessage() {
@@ -593,24 +523,6 @@ function generateProgressChart(habitId, habitData) {
 // Initialize App
 function initApp() {
     console.log('Initializing HabitFlow app...');
-    
-    // Initialize Firebase
-    initializeFirebase();
-    
-    // Load saved data
-    if (loadUserData) {
-        loadUserData();
-    } else {
-        // Fallback to localStorage
-        const saved = localStorage.getItem('habitFlowData');
-        if (saved) {
-            try {
-                appData = { ...appData, ...JSON.parse(saved) };
-            } catch (error) {
-                console.error('Error loading saved data:', error);
-            }
-        }
-    }
     
     // Set up navigation
     document.querySelectorAll('.nav-btn').forEach(btn => {

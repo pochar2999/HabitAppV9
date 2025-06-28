@@ -1,8 +1,16 @@
-
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/YOUR_REPO_NAME/',
+  base: './',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,
