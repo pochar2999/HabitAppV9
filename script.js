@@ -118,6 +118,7 @@ const habitsData = {
 
 // Data persistence functions
 function saveData() {
+    console.log('Saving data...', appData);
     if (window.authManager && window.authManager.getCurrentUser()) {
         window.authManager.saveUserData();
     } else {
@@ -174,11 +175,12 @@ function updateScreenContent(screen) {
 
 // Home Screen Functions
 function updateHomeScreen() {
+    console.log('Updating home screen with data:', appData);
     const daysLogged = document.getElementById('days-logged');
     const activeHabits = document.getElementById('active-habits');
     
-    if (daysLogged) daysLogged.textContent = appData.daysLogged;
-    if (activeHabits) activeHabits.textContent = appData.activeHabits.length;
+    if (daysLogged) daysLogged.textContent = appData.daysLogged || 0;
+    if (activeHabits) activeHabits.textContent = appData.activeHabits ? appData.activeHabits.length : 0;
 }
 
 // Search Functions
@@ -294,7 +296,7 @@ function updateHabitsScreen() {
     
     if (!noHabitsMessage || !activeHabitsList) return;
     
-    if (appData.activeHabits.length === 0) {
+    if (!appData.activeHabits || appData.activeHabits.length === 0) {
         noHabitsMessage.style.display = 'block';
         activeHabitsList.innerHTML = '';
         return;
@@ -425,7 +427,7 @@ function updateProgressScreen() {
     
     if (!noProgressMessage || !progressHabitsList) return;
     
-    if (appData.activeHabits.length === 0) {
+    if (!appData.activeHabits || appData.activeHabits.length === 0) {
         noProgressMessage.style.display = 'block';
         progressHabitsList.innerHTML = '';
         return;
@@ -549,19 +551,21 @@ function updateDailyProgress() {
     
     if (lastUpdate !== today) {
         // New day - check streaks
-        appData.activeHabits.forEach(habitId => {
-            const habitData = appData.habits[habitId];
-            if (habitData && habitData.active) {
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayString = yesterday.toDateString();
-                
-                // If they didn't complete yesterday and had a streak, reset it
-                if (!habitData.completedDays.includes(yesterdayString) && habitData.streak > 0) {
-                    habitData.streak = 0;
+        if (appData.activeHabits) {
+            appData.activeHabits.forEach(habitId => {
+                const habitData = appData.habits[habitId];
+                if (habitData && habitData.active) {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayString = yesterday.toDateString();
+                    
+                    // If they didn't complete yesterday and had a streak, reset it
+                    if (!habitData.completedDays.includes(yesterdayString) && habitData.streak > 0) {
+                        habitData.streak = 0;
+                    }
                 }
-            }
-        });
+            });
+        }
         
         localStorage.setItem('lastUpdate', today);
         saveData();

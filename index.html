@@ -351,12 +351,19 @@
 
         // Wait for user data to be loaded before showing the app
         authManager.onUserDataLoad((user) => {
-            console.log('User data loaded, initializing app');
+            console.log('User data loaded callback triggered, user:', user ? user.email : 'none');
             
-            // Set up profile dropdown
-            setupProfileDropdown();
+            if (user) {
+                // User is authenticated and data is loaded
+                setupProfileDropdown();
+                
+                // Update home screen with loaded data
+                if (window.updateHomeScreen) {
+                    window.updateHomeScreen();
+                }
+            }
             
-            // Hide loading screen and show app
+            // Hide loading screen and show app (whether user is authenticated or not)
             hideLoadingScreen();
             
             // Initialize the app after authentication and data loading is confirmed
@@ -371,21 +378,25 @@
         
         // Fallback timeout to hide loading screen if auth takes too long
         setTimeout(() => {
+            console.log('Timeout reached, checking auth state...');
+            console.log('Auth initialized:', authManager.isAuthInitialized());
+            console.log('User data loaded:', authManager.isUserDataLoaded());
+            
             if (!authManager.isAuthInitialized() || !authManager.isUserDataLoaded()) {
-                console.warn('Auth/data loading timeout, checking current state...');
+                console.warn('Auth/data loading timeout, forcing app to show');
                 
-                // If we're on an auth page, hide loading screen
-                if (authManager.isAuthPage()) {
-                    hideLoadingScreen();
-                    if (window.initApp) {
-                        window.initApp();
-                    }
-                } else {
-                    // Redirect to login if not authenticated
+                // Force hide loading screen
+                hideLoadingScreen();
+                
+                // If we're not on an auth page and no user, redirect to login
+                if (!authManager.isAuthPage() && !authManager.getCurrentUser()) {
+                    console.log('Redirecting to login due to timeout');
                     window.location.href = 'login.html';
+                } else if (window.initApp) {
+                    window.initApp();
                 }
             }
-        }, 10000); // 10 second timeout
+        }, 8000); // 8 second timeout
     </script>
 </body>
 </html>

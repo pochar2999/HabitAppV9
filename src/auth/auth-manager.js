@@ -14,17 +14,21 @@ class AuthManager {
   }
 
   initializeAuth() {
+    console.log('Initializing Firebase Auth...');
+    
     onAuthStateChanged(auth, async (user) => {
-      console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
+      console.log('Auth state changed:', user ? `User logged in: ${user.email}` : 'User logged out');
       
       this.authInitialized = true;
       this.currentUser = user;
       
       if (user && user.emailVerified) {
         try {
+          console.log('Loading user data for:', user.uid);
           await this.loadUserData(user.uid);
           this.userDataLoaded = true;
           
+          console.log('User data loaded, notifying callbacks');
           // Notify callbacks that user data is loaded
           this.onUserDataLoadCallbacks.forEach(callback => callback(user));
           
@@ -38,34 +42,59 @@ class AuthManager {
         }
       } else {
         // User not authenticated or email not verified
+        console.log('User not authenticated or email not verified');
         this.userDataLoaded = false;
         
-        // Redirect to login if we're not already on an auth page
+        // Only redirect if we're not on an auth page and not in the middle of auth flow
         if (!this.isAuthPage()) {
-          window.location.href = 'login.html';
+          console.log('Redirecting to login page');
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 100);
+        } else {
+          // We're on an auth page, notify callbacks to hide loading screen
+          this.onUserDataLoadCallbacks.forEach(callback => callback(null));
         }
       }
       
       // Notify auth state change callbacks
       this.onAuthStateChangeCallbacks.forEach(callback => callback(user));
     });
+
+    // Add timeout fallback
+    setTimeout(() => {
+      if (!this.authInitialized) {
+        console.warn('Auth initialization timeout, forcing initialization');
+        this.authInitialized = true;
+        this.userDataLoaded = true;
+        
+        if (!this.isAuthPage()) {
+          window.location.href = 'login.html';
+        } else {
+          this.onUserDataLoadCallbacks.forEach(callback => callback(null));
+        }
+      }
+    }, 8000);
   }
 
   async loadUserData(userId) {
     try {
+      console.log('Loading user data from Firestore for user:', userId);
       const userDocRef = doc(db, "users", userId);
       const userDocSnap = await getDoc(userDocRef);
       
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
+        console.log('Found existing user data:', userData);
         
         // Load user's app data or initialize with defaults
         const appData = userData.appData || this.getDefaultAppData();
         
         // Update global app data
         if (window.appData) {
-          // Reset to clean state first
+          // Reset to clean state first, then merge user data
           window.appData = { ...this.getDefaultAppData(), ...appData };
+          console.log('Updated global appData:', window.appData);
         }
         
         // Update UI elements with user info
@@ -77,17 +106,41 @@ class AuthManager {
         // New user - initialize with default data
         console.log('New user detected, initializing default data');
         const defaultData = this.getDefaultAppData();
-        await this.saveUserData(userId, defaultData);
+        
+        // Save default data to Firestore for new user
+        await this.saveNewUserData(userId, defaultData);
         
         if (window.appData) {
           window.appData = { ...defaultData };
         }
         
+        console.log('New user initialized with default data');
         return defaultData;
       }
     } catch (error) {
       console.error('Error in loadUserData:', error);
       throw error;
+    }
+  }
+
+  async saveNewUserData(userId, appData) {
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const user = this.currentUser;
+      
+      await setDoc(userDocRef, {
+        userId: userId,
+        name: user.displayName || user.email.split('@')[0],
+        email: user.email,
+        verified: user.emailVerified,
+        appData: appData,
+        createdAt: new Date(),
+        lastUpdated: new Date()
+      });
+      
+      console.log('New user data saved to Firestore');
+    } catch (error) {
+      console.error('Error saving new user data:', error);
     }
   }
 
@@ -101,6 +154,7 @@ class AuthManager {
     }
 
     try {
+      console.log('Saving user data to Firestore:', dataToSave);
       const userDocRef = doc(db, "users", user);
       await setDoc(userDocRef, {
         appData: dataToSave,
@@ -164,13 +218,14 @@ class AuthManager {
   }
 
   isAuthPage() {
-    const authPages = ['login.html', 'signup.html', 'forgot.html', 'verify.html'];
-    const currentPage = window.location.pathname.split('/').pop();
+    const authPages = ['login.html', 'signup.html', 'forgot.html', 'verify.html', 'profile.html'];
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     return authPages.includes(currentPage);
   }
 
   async logout() {
     try {
+      console.log('Logging out user');
       await signOut(auth);
       
       // Clear user data
