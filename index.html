@@ -25,7 +25,21 @@
                             <span class="stat-label">Active Habits</span>
                         </div>
                     </div>
-                    <button id="profile-btn" class="profile-btn">Profile</button>
+                    <div class="profile-container">
+                        <button id="profile-btn" class="profile-btn">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" alt="Profile" class="profile-avatar">
+                        </button>
+                        <div id="profile-dropdown" class="profile-dropdown">
+                            <div class="profile-info">
+                                <div class="profile-name" id="profile-name">User Name</div>
+                                <div class="profile-email" id="profile-email">user@example.com</div>
+                            </div>
+                            <hr class="profile-divider">
+                            <button id="logout-btn" class="logout-btn">
+                                <span>Log Out</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </header>
             
@@ -263,39 +277,99 @@
     <script src="script.js"></script>
     <script type="module">
         import { auth, db } from './src/firebase-config.js';
-        import { onAuthStateChanged } from 'firebase/auth';
+        import { onAuthStateChanged, signOut } from 'firebase/auth';
         import { doc, getDoc } from 'firebase/firestore';
+
+        let currentUser = null;
 
         onAuthStateChanged(auth, async (user) => {
             if (user && user.emailVerified) {
+                currentUser = user;
                 // User is authenticated and verified
                 const greeting = document.getElementById("greeting");
-                if (greeting) {
+                const profileName = document.getElementById("profile-name");
+                const profileEmail = document.getElementById("profile-email");
+                
+                if (greeting && profileName && profileEmail) {
                     try {
                         const docRef = doc(db, "users", user.uid);
                         const docSnap = await getDoc(docRef);
                         const userData = docSnap.exists() ? docSnap.data() : null;
                         const displayName = userData?.name || user.displayName || user.email.split('@')[0];
+                        
                         greeting.textContent = `Welcome back, ${displayName}!`;
+                        profileName.textContent = displayName;
+                        profileEmail.textContent = user.email;
                     } catch (error) {
                         console.error('Error loading user data:', error);
-                        greeting.textContent = `Welcome back, ${user.email.split('@')[0]}!`;
+                        const fallbackName = user.email.split('@')[0];
+                        greeting.textContent = `Welcome back, ${fallbackName}!`;
+                        profileName.textContent = fallbackName;
+                        profileEmail.textContent = user.email;
                     }
                 }
                 
-                // Show profile button
+                // Show profile button and set up dropdown
                 const profileBtn = document.getElementById('profile-btn');
-                if (profileBtn) {
+                const profileDropdown = document.getElementById('profile-dropdown');
+                const logoutBtn = document.getElementById('logout-btn');
+                
+                if (profileBtn && profileDropdown && logoutBtn) {
                     profileBtn.style.display = 'block';
-                    profileBtn.addEventListener('click', () => {
-                        window.location.href = 'profile.html';
+                    
+                    // Toggle dropdown on profile button click
+                    profileBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        profileDropdown.classList.toggle('show');
+                    });
+                    
+                    // Close dropdown when clicking outside
+                    document.addEventListener('click', (e) => {
+                        if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                            profileDropdown.classList.remove('show');
+                        }
+                    });
+                    
+                    // Logout functionality
+                    logoutBtn.addEventListener('click', async () => {
+                        try {
+                            await signOut(auth);
+                            window.location.href = 'login.html';
+                        } catch (error) {
+                            console.error('Error signing out:', error);
+                        }
                     });
                 }
+                
+                // Load user-specific data
+                await loadUserData(user.uid);
             } else {
                 // User is not authenticated, redirect to login
                 window.location.href = 'login.html';
             }
         });
+
+        // Function to load user-specific data
+        async function loadUserData(userId) {
+            try {
+                const userDocRef = doc(db, "users", userId);
+                const userDocSnap = await getDoc(userDocRef);
+                
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    // Update the global appData with user's data
+                    if (userData.appData) {
+                        Object.assign(appData, userData.appData);
+                        updateHomeScreen();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Make currentUser available globally
+        window.getCurrentUser = () => currentUser;
     </script>
 </body>
 </html>

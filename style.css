@@ -133,6 +133,120 @@ body {
     transform: translateY(-50%) translateX(-2px);
 }
 
+/* Profile Container */
+.profile-container {
+    position: absolute;
+    top: 30px;
+    right: 20px;
+    z-index: 10;
+}
+
+.profile-btn {
+    background: rgba(255,255,255,0.25);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: none;
+    padding: 0;
+    overflow: hidden;
+}
+
+.profile-btn:hover {
+    background: rgba(255,255,255,0.35);
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.profile-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border: 1px solid rgba(255,255,255,0.8);
+    min-width: 220px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 1000;
+}
+
+.profile-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.profile-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 20px;
+    width: 16px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255,255,255,0.8);
+    border-bottom: none;
+    border-right: none;
+    transform: rotate(45deg);
+    backdrop-filter: blur(20px);
+}
+
+.profile-info {
+    padding: 20px;
+}
+
+.profile-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 4px;
+}
+
+.profile-email {
+    font-size: 14px;
+    color: #718096;
+}
+
+.profile-divider {
+    border: none;
+    height: 1px;
+    background: rgba(102, 126, 234, 0.1);
+    margin: 0;
+}
+
+.logout-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 16px 20px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #e53e3e;
+    transition: all 0.3s ease;
+    border-radius: 0 0 16px 16px;
+}
+
+.logout-btn:hover {
+    background: rgba(229, 62, 62, 0.1);
+}
+
 /* Home Screen */
 .home-content {
     padding: 40px 20px;

@@ -116,16 +116,48 @@ const habitsData = {
     }
 };
 
-// Local Storage Functions
-function saveData() {
-    localStorage.setItem('habitFlowData', JSON.stringify(appData));
+// Firebase imports for data persistence
+import { auth, db } from './src/firebase-config.js';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+
+// Data persistence functions
+async function saveUserData() {
+    const currentUser = window.getCurrentUser?.();
+    if (!currentUser) return;
+    
+    try {
+        const userDocRef = doc(db, "users", currentUser.uid);
+        await setDoc(userDocRef, {
+            appData: appData,
+            lastUpdated: new Date()
+        }, { merge: true });
+    } catch (error) {
+        console.error('Error saving user data:', error);
+    }
 }
 
-function loadData() {
-    const saved = localStorage.getItem('habitFlowData');
-    if (saved) {
-        appData = { ...appData, ...JSON.parse(saved) };
+async function loadUserData() {
+    const currentUser = window.getCurrentUser?.();
+    if (!currentUser) return;
+    
+    try {
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        
+        if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            if (userData.appData) {
+                appData = { ...appData, ...userData.appData };
+            }
+        }
+    } catch (error) {
+        console.error('Error loading user data:', error);
     }
+}
+
+// Updated save function to use Firebase instead of localStorage
+function saveData() {
+    saveUserData();
 }
 
 // Navigation Functions
@@ -500,8 +532,6 @@ function generateProgressChart(habitId, habitData) {
 
 // Initialize App
 function initApp() {
-    loadData();
-    
     // Set up navigation
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -544,3 +574,12 @@ function updateDailyProgress() {
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', initApp);
+
+// Make functions available globally
+window.navigateTo = navigateTo;
+window.goBack = goBack;
+window.searchHabits = searchHabits;
+window.selectHabit = selectHabit;
+window.startHabit = startHabit;
+window.markHabitComplete = markHabitComplete;
+window.undoHabitComplete = undoHabitComplete;
