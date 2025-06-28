@@ -8,7 +8,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="app">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <h1 class="loading-title">HabitFlow</h1>
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading your habits...</p>
+        </div>
+    </div>
+
+    <div id="app" style="display: none;">
         <!-- Home Screen -->
         <div id="home-screen" class="screen active">
             <header class="header">
@@ -244,35 +253,35 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-        <button class="nav-btn" onclick="navigateTo('home')" data-tab="home">
-            <div class="nav-icon">
-                <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=24&h=24&fit=crop&crop=center" alt="Home">
-            </div>
-            <span class="nav-label">Home</span>
-        </button>
-        <button class="nav-btn" onclick="navigateTo('habits')" data-tab="habits">
-            <div class="nav-icon">
-                <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=24&h=24&fit=crop&crop=center" alt="Habits">
-            </div>
-            <span class="nav-label">Habits</span>
-        </button>
-        <button class="nav-btn" onclick="navigateTo('progress')" data-tab="progress">
-            <div class="nav-icon">
-                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=24&h=24&fit=crop&crop=center" alt="Progress">
-            </div>
-            <span class="nav-label">Progress</span>
-        </button>
-        <button class="nav-btn" onclick="navigateTo('hotline')" data-tab="hotline">
-            <div class="nav-icon">
-                <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=24&h=24&fit=crop&crop=center" alt="Support">
-            </div>
-            <span class="nav-label">Support</span>
-        </button>
-    </nav>
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-btn" onclick="navigateTo('home')" data-tab="home">
+                <div class="nav-icon">
+                    <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=24&h=24&fit=crop&crop=center" alt="Home">
+                </div>
+                <span class="nav-label">Home</span>
+            </button>
+            <button class="nav-btn" onclick="navigateTo('habits')" data-tab="habits">
+                <div class="nav-icon">
+                    <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=24&h=24&fit=crop&crop=center" alt="Habits">
+                </div>
+                <span class="nav-label">Habits</span>
+            </button>
+            <button class="nav-btn" onclick="navigateTo('progress')" data-tab="progress">
+                <div class="nav-icon">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=24&h=24&fit=crop&crop=center" alt="Progress">
+                </div>
+                <span class="nav-label">Progress</span>
+            </button>
+            <button class="nav-btn" onclick="navigateTo('hotline')" data-tab="hotline">
+                <div class="nav-icon">
+                    <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=24&h=24&fit=crop&crop=center" alt="Support">
+                </div>
+                <span class="nav-label">Support</span>
+            </button>
+        </nav>
+    </div>
 
     <script src="script.js"></script>
     <script type="module">
@@ -281,17 +290,43 @@
         import { doc, getDoc } from 'firebase/firestore';
 
         let currentUser = null;
+        let authInitialized = false;
+
+        // Show loading screen initially
+        const loadingScreen = document.getElementById('loading-screen');
+        const app = document.getElementById('app');
+
+        function hideLoadingScreen() {
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+            if (app) {
+                app.style.display = 'block';
+            }
+        }
+
+        function showLoadingScreen() {
+            if (loadingScreen) {
+                loadingScreen.style.display = 'flex';
+            }
+            if (app) {
+                app.style.display = 'none';
+            }
+        }
 
         onAuthStateChanged(auth, async (user) => {
+            authInitialized = true;
+            
             if (user && user.emailVerified) {
                 currentUser = user;
-                // User is authenticated and verified
-                const greeting = document.getElementById("greeting");
-                const profileName = document.getElementById("profile-name");
-                const profileEmail = document.getElementById("profile-email");
                 
-                if (greeting && profileName && profileEmail) {
-                    try {
+                try {
+                    // Load user profile data
+                    const greeting = document.getElementById("greeting");
+                    const profileName = document.getElementById("profile-name");
+                    const profileEmail = document.getElementById("profile-email");
+                    
+                    if (greeting && profileName && profileEmail) {
                         const docRef = doc(db, "users", user.uid);
                         const docSnap = await getDoc(docRef);
                         const userData = docSnap.exists() ? docSnap.data() : null;
@@ -300,49 +335,65 @@
                         greeting.textContent = `Welcome back, ${displayName}!`;
                         profileName.textContent = displayName;
                         profileEmail.textContent = user.email;
-                    } catch (error) {
-                        console.error('Error loading user data:', error);
-                        const fallbackName = user.email.split('@')[0];
-                        greeting.textContent = `Welcome back, ${fallbackName}!`;
-                        profileName.textContent = fallbackName;
-                        profileEmail.textContent = user.email;
+                    }
+                    
+                    // Show profile button and set up dropdown
+                    const profileBtn = document.getElementById('profile-btn');
+                    const profileDropdown = document.getElementById('profile-dropdown');
+                    const logoutBtn = document.getElementById('logout-btn');
+                    
+                    if (profileBtn && profileDropdown && logoutBtn) {
+                        profileBtn.style.display = 'block';
+                        
+                        // Remove existing event listeners to prevent duplicates
+                        const newProfileBtn = profileBtn.cloneNode(true);
+                        profileBtn.parentNode.replaceChild(newProfileBtn, profileBtn);
+                        
+                        const newLogoutBtn = logoutBtn.cloneNode(true);
+                        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+                        
+                        // Add fresh event listeners
+                        newProfileBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            profileDropdown.classList.toggle('show');
+                        });
+                        
+                        // Close dropdown when clicking outside
+                        document.addEventListener('click', (e) => {
+                            if (!newProfileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                                profileDropdown.classList.remove('show');
+                            }
+                        });
+                        
+                        // Logout functionality
+                        newLogoutBtn.addEventListener('click', async () => {
+                            try {
+                                await signOut(auth);
+                                window.location.href = 'login.html';
+                            } catch (error) {
+                                console.error('Error signing out:', error);
+                            }
+                        });
+                    }
+                    
+                    // Load user-specific data
+                    await loadUserData(user.uid);
+                    
+                    // Hide loading screen and show app
+                    hideLoadingScreen();
+                    
+                    // Initialize the app after authentication is confirmed
+                    if (window.initApp) {
+                        window.initApp();
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                    hideLoadingScreen();
+                    if (window.initApp) {
+                        window.initApp();
                     }
                 }
-                
-                // Show profile button and set up dropdown
-                const profileBtn = document.getElementById('profile-btn');
-                const profileDropdown = document.getElementById('profile-dropdown');
-                const logoutBtn = document.getElementById('logout-btn');
-                
-                if (profileBtn && profileDropdown && logoutBtn) {
-                    profileBtn.style.display = 'block';
-                    
-                    // Toggle dropdown on profile button click
-                    profileBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        profileDropdown.classList.toggle('show');
-                    });
-                    
-                    // Close dropdown when clicking outside
-                    document.addEventListener('click', (e) => {
-                        if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-                            profileDropdown.classList.remove('show');
-                        }
-                    });
-                    
-                    // Logout functionality
-                    logoutBtn.addEventListener('click', async () => {
-                        try {
-                            await signOut(auth);
-                            window.location.href = 'login.html';
-                        } catch (error) {
-                            console.error('Error signing out:', error);
-                        }
-                    });
-                }
-                
-                // Load user-specific data
-                await loadUserData(user.uid);
             } else {
                 // User is not authenticated, redirect to login
                 window.location.href = 'login.html';
@@ -358,9 +409,11 @@
                 if (userDocSnap.exists()) {
                     const userData = userDocSnap.data();
                     // Update the global appData with user's data
-                    if (userData.appData) {
-                        Object.assign(appData, userData.appData);
-                        updateHomeScreen();
+                    if (userData.appData && window.appData) {
+                        Object.assign(window.appData, userData.appData);
+                        if (window.updateHomeScreen) {
+                            window.updateHomeScreen();
+                        }
                     }
                 }
             } catch (error) {
@@ -370,6 +423,17 @@
 
         // Make currentUser available globally
         window.getCurrentUser = () => currentUser;
+        
+        // Fallback timeout to hide loading screen if auth takes too long
+        setTimeout(() => {
+            if (!authInitialized) {
+                console.warn('Auth initialization timeout, showing app anyway');
+                hideLoadingScreen();
+                if (window.initApp) {
+                    window.initApp();
+                }
+            }
+        }, 5000);
     </script>
 </body>
 </html>

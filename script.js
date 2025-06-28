@@ -117,47 +117,85 @@ const habitsData = {
 };
 
 // Firebase imports for data persistence
-import { auth, db } from './src/firebase-config.js';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+let auth, db;
+let saveUserData, loadUserData;
 
-// Data persistence functions
-async function saveUserData() {
-    const currentUser = window.getCurrentUser?.();
-    if (!currentUser) return;
-    
+// Initialize Firebase functions when available
+function initializeFirebase() {
     try {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        await setDoc(userDocRef, {
-            appData: appData,
-            lastUpdated: new Date()
-        }, { merge: true });
-    } catch (error) {
-        console.error('Error saving user data:', error);
-    }
-}
+        if (window.auth && window.db) {
+            auth = window.auth;
+            db = window.db;
+            
+            // Import Firebase functions
+            import('./src/firebase-config.js').then(module => {
+                auth = module.auth;
+                db = module.db;
+                
+                import('firebase/firestore').then(firestoreModule => {
+                    const { doc, setDoc, getDoc } = firestoreModule;
+                    
+                    // Data persistence functions
+                    saveUserData = async function() {
+                        const currentUser = window.getCurrentUser?.();
+                        if (!currentUser) return;
+                        
+                        try {
+                            const userDocRef = doc(db, "users", currentUser.uid);
+                            await setDoc(userDocRef, {
+                                appData: appData,
+                                lastUpdated: new Date()
+                            }, { merge: true });
+                        } catch (error) {
+                            console.error('Error saving user data:', error);
+                        }
+                    };
 
-async function loadUserData() {
-    const currentUser = window.getCurrentUser?.();
-    if (!currentUser) return;
-    
-    try {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const userDocSnap = await getDoc(userDocRef);
-        
-        if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            if (userData.appData) {
-                appData = { ...appData, ...userData.appData };
-            }
+                    loadUserData = async function() {
+                        const currentUser = window.getCurrentUser?.();
+                        if (!currentUser) return;
+                        
+                        try {
+                            const userDocRef = doc(db, "users", currentUser.uid);
+                            const userDocSnap = await getDoc(userDocRef);
+                            
+                            if (userDocSnap.exists()) {
+                                const userData = userDocSnap.data();
+                                if (userData.appData) {
+                                    appData = { ...appData, ...userData.appData };
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error loading user data:', error);
+                        }
+                    };
+                });
+            });
         }
     } catch (error) {
-        console.error('Error loading user data:', error);
+        console.log('Firebase not available, using localStorage fallback');
+        // Fallback to localStorage
+        saveUserData = function() {
+            localStorage.setItem('habitFlowData', JSON.stringify(appData));
+        };
+        
+        loadUserData = function() {
+            const saved = localStorage.getItem('habitFlowData');
+            if (saved) {
+                appData = { ...appData, ...JSON.parse(saved) };
+            }
+        };
     }
 }
 
-// Updated save function to use Firebase instead of localStorage
+// Updated save function
 function saveData() {
-    saveUserData();
+    if (saveUserData) {
+        saveUserData();
+    } else {
+        // Fallback to localStorage
+        localStorage.setItem('habitFlowData', JSON.stringify(appData));
+    }
 }
 
 // Navigation Functions
@@ -166,11 +204,17 @@ function navigateTo(screen) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     
     // Show target screen
-    document.getElementById(screen + '-screen').classList.add('active');
+    const targetScreen = document.getElementById(screen + '-screen');
+    if (targetScreen) {
+        targetScreen.classList.add('active');
+    }
     
     // Update navigation state
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`[data-tab="${screen}"]`)?.classList.add('active');
+    const targetNavBtn = document.querySelector(`[data-tab="${screen}"]`);
+    if (targetNavBtn) {
+        targetNavBtn.classList.add('active');
+    }
     
     currentScreen = screen;
     
@@ -213,12 +257,15 @@ function updateHomeScreen() {
 function searchHabits(type) {
     const searchInput = document.getElementById(`${type}-search`);
     const habitsList = document.getElementById(`${type}-habits-list`);
+    
+    if (!searchInput || !habitsList) return;
+    
     const query = searchInput.value.toLowerCase();
     
     const cards = habitsList.querySelectorAll('.habit-card');
     cards.forEach(card => {
-        const habitName = card.querySelector('h4').textContent.toLowerCase();
-        const habitDescription = card.querySelector('p').textContent.toLowerCase();
+        const habitName = card.querySelector('h4')?.textContent.toLowerCase() || '';
+        const habitDescription = card.querySelector('p')?.textContent.toLowerCase() || '';
         
         if (habitName.includes(query) || habitDescription.includes(query)) {
             card.style.display = 'flex';
@@ -237,35 +284,44 @@ function selectHabit(habitId, type) {
     if (!habit) return;
     
     // Update strategy screen
-    document.getElementById('strategy-title').textContent = habit.name + ' Strategy';
-    document.getElementById('habit-description').textContent = habit.description;
+    const strategyTitle = document.getElementById('strategy-title');
+    const habitDescription = document.getElementById('habit-description');
+    
+    if (strategyTitle) strategyTitle.textContent = habit.name + ' Strategy';
+    if (habitDescription) habitDescription.textContent = habit.description;
     
     // Update methods
     const methodsList = document.getElementById('methods-list');
-    methodsList.innerHTML = '';
-    
-    habit.methods.forEach(method => {
-        const methodCard = document.createElement('div');
-        methodCard.className = 'method-card';
-        methodCard.innerHTML = `
-            <div class="method-title">${method.title}</div>
-            <div class="method-description">${method.description}</div>
-        `;
-        methodsList.appendChild(methodCard);
-    });
+    if (methodsList) {
+        methodsList.innerHTML = '';
+        
+        habit.methods.forEach(method => {
+            const methodCard = document.createElement('div');
+            methodCard.className = 'method-card';
+            methodCard.innerHTML = `
+                <div class="method-title">${method.title}</div>
+                <div class="method-description">${method.description}</div>
+            `;
+            methodsList.appendChild(methodCard);
+        });
+    }
     
     // Show quote for break habits
     const quoteSection = document.getElementById('quote-section');
-    if (habit.quote) {
-        document.getElementById('motivational-quote').textContent = habit.quote;
+    const motivationalQuote = document.getElementById('motivational-quote');
+    
+    if (habit.quote && quoteSection && motivationalQuote) {
+        motivationalQuote.textContent = habit.quote;
         quoteSection.style.display = 'block';
-    } else {
+    } else if (quoteSection) {
         quoteSection.style.display = 'none';
     }
     
     // Update start button text
-    document.getElementById('start-habit-btn').textContent = 
-        type === 'build' ? 'Start Habit Plan' : 'Start Breaking Plan';
+    const startBtn = document.getElementById('start-habit-btn');
+    if (startBtn) {
+        startBtn.textContent = type === 'build' ? 'Start Habit Plan' : 'Start Breaking Plan';
+    }
     
     navigateTo('strategy');
 }
@@ -307,6 +363,8 @@ function startHabit() {
 function updateHabitsScreen() {
     const noHabitsMessage = document.getElementById('no-habits-message');
     const activeHabitsList = document.getElementById('active-habits-list');
+    
+    if (!noHabitsMessage || !activeHabitsList) return;
     
     if (appData.activeHabits.length === 0) {
         noHabitsMessage.style.display = 'block';
@@ -435,6 +493,8 @@ function updateProgressScreen() {
     const noProgressMessage = document.getElementById('no-progress-message');
     const progressHabitsList = document.getElementById('progress-habits-list');
     
+    if (!noProgressMessage || !progressHabitsList) return;
+    
     if (appData.activeHabits.length === 0) {
         noProgressMessage.style.display = 'block';
         progressHabitsList.innerHTML = '';
@@ -532,11 +592,33 @@ function generateProgressChart(habitId, habitData) {
 
 // Initialize App
 function initApp() {
+    console.log('Initializing HabitFlow app...');
+    
+    // Initialize Firebase
+    initializeFirebase();
+    
+    // Load saved data
+    if (loadUserData) {
+        loadUserData();
+    } else {
+        // Fallback to localStorage
+        const saved = localStorage.getItem('habitFlowData');
+        if (saved) {
+            try {
+                appData = { ...appData, ...JSON.parse(saved) };
+            } catch (error) {
+                console.error('Error loading saved data:', error);
+            }
+        }
+    }
+    
     // Set up navigation
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const tab = btn.getAttribute('data-tab');
-            navigateTo(tab);
+            if (tab) {
+                navigateTo(tab);
+            }
         });
     });
     
@@ -545,6 +627,8 @@ function initApp() {
     
     // Update daily progress
     updateDailyProgress();
+    
+    console.log('HabitFlow app initialized successfully');
 }
 
 function updateDailyProgress() {
@@ -572,9 +656,6 @@ function updateDailyProgress() {
     }
 }
 
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', initApp);
-
 // Make functions available globally
 window.navigateTo = navigateTo;
 window.goBack = goBack;
@@ -583,3 +664,13 @@ window.selectHabit = selectHabit;
 window.startHabit = startHabit;
 window.markHabitComplete = markHabitComplete;
 window.undoHabitComplete = undoHabitComplete;
+window.initApp = initApp;
+window.updateHomeScreen = updateHomeScreen;
+window.appData = appData;
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
