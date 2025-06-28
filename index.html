@@ -23,7 +23,7 @@
             <header class="header">
                 <div class="header-content">
                     <h1 class="app-title">HabitFlow</h1>
-                    <div class="greeting" id="greeting">Welcome back, User!</div>
+                    <div class="greeting" id="greeting">Welcome to HabitFlow!</div>
                     <div class="stats">
                         <div class="stat-item">
                             <span class="stat-number" id="days-logged">0</span>
@@ -35,7 +35,7 @@
                         </div>
                     </div>
                     <div class="profile-container">
-                        <button id="profile-btn" class="profile-btn">
+                        <button id="profile-btn" class="profile-btn" style="display: none;">
                             <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" alt="Profile" class="profile-avatar">
                         </button>
                         <div id="profile-dropdown" class="profile-dropdown">
@@ -48,6 +48,11 @@
                                 <span>Log Out</span>
                             </button>
                         </div>
+                    </div>
+                    <!-- Auth buttons for non-authenticated users -->
+                    <div id="auth-buttons" class="auth-buttons">
+                        <a href="login.html" class="auth-link-btn">Sign In</a>
+                        <a href="signup.html" class="auth-link-btn primary">Sign Up</a>
                     </div>
                 </div>
             </header>
@@ -285,18 +290,17 @@
 
     <script src="script.js"></script>
     <script type="module">
-        import { auth, db } from './src/firebase-config.js';
-        import { onAuthStateChanged, signOut } from 'firebase/auth';
-        import { doc, getDoc } from 'firebase/firestore';
-
         let currentUser = null;
         let authInitialized = false;
+        let firebaseAvailable = false;
+        let initializationStarted = false;
 
         // Show loading screen initially
         const loadingScreen = document.getElementById('loading-screen');
         const app = document.getElementById('app');
 
         function hideLoadingScreen() {
+            console.log('Hiding loading screen and showing app');
             if (loadingScreen) {
                 loadingScreen.style.display = 'none';
             }
@@ -314,126 +318,217 @@
             }
         }
 
-        onAuthStateChanged(auth, async (user) => {
-            authInitialized = true;
-            
-            if (user && user.emailVerified) {
-                currentUser = user;
-                
-                try {
-                    // Load user profile data
-                    const greeting = document.getElementById("greeting");
-                    const profileName = document.getElementById("profile-name");
-                    const profileEmail = document.getElementById("profile-email");
-                    
-                    if (greeting && profileName && profileEmail) {
-                        const docRef = doc(db, "users", user.uid);
-                        const docSnap = await getDoc(docRef);
-                        const userData = docSnap.exists() ? docSnap.data() : null;
-                        const displayName = userData?.name || user.displayName || user.email.split('@')[0];
-                        
-                        greeting.textContent = `Welcome back, ${displayName}!`;
-                        profileName.textContent = displayName;
-                        profileEmail.textContent = user.email;
-                    }
-                    
-                    // Show profile button and set up dropdown
-                    const profileBtn = document.getElementById('profile-btn');
-                    const profileDropdown = document.getElementById('profile-dropdown');
-                    const logoutBtn = document.getElementById('logout-btn');
-                    
-                    if (profileBtn && profileDropdown && logoutBtn) {
-                        profileBtn.style.display = 'block';
-                        
-                        // Remove existing event listeners to prevent duplicates
-                        const newProfileBtn = profileBtn.cloneNode(true);
-                        profileBtn.parentNode.replaceChild(newProfileBtn, profileBtn);
-                        
-                        const newLogoutBtn = logoutBtn.cloneNode(true);
-                        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-                        
-                        // Add fresh event listeners
-                        newProfileBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            profileDropdown.classList.toggle('show');
-                        });
-                        
-                        // Close dropdown when clicking outside
-                        document.addEventListener('click', (e) => {
-                            if (!newProfileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-                                profileDropdown.classList.remove('show');
-                            }
-                        });
-                        
-                        // Logout functionality
-                        newLogoutBtn.addEventListener('click', async () => {
-                            try {
-                                await signOut(auth);
-                                window.location.href = 'login.html';
-                            } catch (error) {
-                                console.error('Error signing out:', error);
-                            }
-                        });
-                    }
-                    
-                    // Load user-specific data
-                    await loadUserData(user.uid);
-                    
-                    // Hide loading screen and show app
-                    hideLoadingScreen();
-                    
-                    // Initialize the app after authentication is confirmed
-                    if (window.initApp) {
-                        window.initApp();
-                    }
-                    
-                } catch (error) {
-                    console.error('Error loading user data:', error);
-                    hideLoadingScreen();
-                    if (window.initApp) {
-                        window.initApp();
-                    }
-                }
-            } else {
-                // User is not authenticated, redirect to login
-                window.location.href = 'login.html';
+        function initializeApp() {
+            if (initializationStarted) {
+                console.log('App initialization already started, skipping...');
+                return;
             }
-        });
+            
+            initializationStarted = true;
+            console.log('Initializing HabitFlow app...');
+            
+            // Hide loading screen and show app
+            hideLoadingScreen();
+            
+            // Initialize the app
+            if (window.initApp) {
+                window.initApp();
+            }
+            
+            // Update UI based on auth state
+            updateAuthUI();
+            
+            console.log('HabitFlow app initialized successfully');
+        }
 
-        // Function to load user-specific data
-        async function loadUserData(userId) {
-            try {
-                const userDocRef = doc(db, "users", userId);
-                const userDocSnap = await getDoc(userDocRef);
-                
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data();
-                    // Update the global appData with user's data
-                    if (userData.appData && window.appData) {
-                        Object.assign(window.appData, userData.appData);
-                        if (window.updateHomeScreen) {
-                            window.updateHomeScreen();
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
+        function updateAuthUI() {
+            const profileBtn = document.getElementById('profile-btn');
+            const authButtons = document.getElementById('auth-buttons');
+            const greeting = document.getElementById('greeting');
+            
+            if (currentUser) {
+                // User is authenticated
+                if (profileBtn) profileBtn.style.display = 'block';
+                if (authButtons) authButtons.style.display = 'none';
+                if (greeting) greeting.textContent = `Welcome back, ${currentUser.displayName || currentUser.email.split('@')[0]}!`;
+            } else {
+                // User is not authenticated - show demo mode
+                if (profileBtn) profileBtn.style.display = 'none';
+                if (authButtons) authButtons.style.display = 'flex';
+                if (greeting) greeting.textContent = 'Welcome to HabitFlow!';
             }
         }
 
-        // Make currentUser available globally
-        window.getCurrentUser = () => currentUser;
-        
-        // Fallback timeout to hide loading screen if auth takes too long
+        // Immediate fallback - show app after 1 second regardless
         setTimeout(() => {
-            if (!authInitialized) {
-                console.warn('Auth initialization timeout, showing app anyway');
-                hideLoadingScreen();
-                if (window.initApp) {
-                    window.initApp();
-                }
+            if (!initializationStarted) {
+                console.log('Quick fallback: Showing app in demo mode');
+                initializeApp();
             }
-        }, 5000);
+        }, 1000);
+
+        // Try to initialize Firebase with better error handling
+        try {
+            // Check if we're in a production environment where Firebase might not work
+            const isProduction = window.location.hostname !== 'localhost' && 
+                                window.location.hostname !== '127.0.0.1' && 
+                                !window.location.hostname.includes('replit');
+            
+            if (isProduction) {
+                console.log('Production environment detected, using demo mode');
+                setTimeout(initializeApp, 500);
+            } else {
+                // Try to load Firebase
+                import('./src/firebase-config.js').then(async (firebaseModule) => {
+                    try {
+                        const { auth, db } = firebaseModule;
+                        const { onAuthStateChanged, signOut } = await import('firebase/auth');
+                        const { doc, getDoc } = await import('firebase/firestore');
+                        
+                        firebaseAvailable = true;
+                        console.log('Firebase loaded successfully');
+
+                        onAuthStateChanged(auth, async (user) => {
+                            authInitialized = true;
+                            
+                            if (user && user.emailVerified) {
+                                currentUser = user;
+                                
+                                try {
+                                    // Load user profile data
+                                    const greeting = document.getElementById("greeting");
+                                    const profileName = document.getElementById("profile-name");
+                                    const profileEmail = document.getElementById("profile-email");
+                                    
+                                    if (greeting && profileName && profileEmail) {
+                                        const docRef = doc(db, "users", user.uid);
+                                        const docSnap = await getDoc(docRef);
+                                        const userData = docSnap.exists() ? docSnap.data() : null;
+                                        const displayName = userData?.name || user.displayName || user.email.split('@')[0];
+                                        
+                                        greeting.textContent = `Welcome back, ${displayName}!`;
+                                        profileName.textContent = displayName;
+                                        profileEmail.textContent = user.email;
+                                    }
+                                    
+                                    // Show profile button and set up dropdown
+                                    const profileBtn = document.getElementById('profile-btn');
+                                    const profileDropdown = document.getElementById('profile-dropdown');
+                                    const logoutBtn = document.getElementById('logout-btn');
+                                    
+                                    if (profileBtn && profileDropdown && logoutBtn) {
+                                        profileBtn.style.display = 'block';
+                                        
+                                        // Remove existing event listeners to prevent duplicates
+                                        const newProfileBtn = profileBtn.cloneNode(true);
+                                        profileBtn.parentNode.replaceChild(newProfileBtn, profileBtn);
+                                        
+                                        const newLogoutBtn = logoutBtn.cloneNode(true);
+                                        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+                                        
+                                        // Add fresh event listeners
+                                        newProfileBtn.addEventListener('click', (e) => {
+                                            e.stopPropagation();
+                                            profileDropdown.classList.toggle('show');
+                                        });
+                                        
+                                        // Close dropdown when clicking outside
+                                        document.addEventListener('click', (e) => {
+                                            if (!newProfileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                                                profileDropdown.classList.remove('show');
+                                            }
+                                        });
+                                        
+                                        // Logout functionality
+                                        newLogoutBtn.addEventListener('click', async () => {
+                                            try {
+                                                await signOut(auth);
+                                                currentUser = null;
+                                                updateAuthUI();
+                                            } catch (error) {
+                                                console.error('Error signing out:', error);
+                                            }
+                                        });
+                                    }
+                                    
+                                    // Load user-specific data
+                                    await loadUserData(user.uid);
+                                    
+                                } catch (error) {
+                                    console.error('Error loading user data:', error);
+                                }
+                            } else {
+                                currentUser = null;
+                            }
+                            
+                            updateAuthUI();
+                            
+                            if (!initializationStarted) {
+                                initializeApp();
+                            }
+                        });
+
+                        // Function to load user-specific data
+                        async function loadUserData(userId) {
+                            try {
+                                const userDocRef = doc(db, "users", userId);
+                                const userDocSnap = await getDoc(userDocRef);
+                                
+                                if (userDocSnap.exists()) {
+                                    const userData = userDocSnap.data();
+                                    // Update the global appData with user's data
+                                    if (userData.appData && window.appData) {
+                                        Object.assign(window.appData, userData.appData);
+                                        if (window.updateHomeScreen) {
+                                            window.updateHomeScreen();
+                                        }
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('Error loading user data:', error);
+                            }
+                        }
+
+                        // Make currentUser available globally
+                        window.getCurrentUser = () => currentUser;
+                        
+                    } catch (firebaseError) {
+                        console.log('Firebase initialization failed:', firebaseError);
+                        firebaseAvailable = false;
+                        authInitialized = true;
+                        if (!initializationStarted) {
+                            initializeApp();
+                        }
+                    }
+                }).catch((error) => {
+                    console.log('Firebase module loading failed:', error);
+                    firebaseAvailable = false;
+                    authInitialized = true;
+                    if (!initializationStarted) {
+                        initializeApp();
+                    }
+                });
+            }
+        } catch (error) {
+            console.log('Firebase initialization error:', error);
+            firebaseAvailable = false;
+            authInitialized = true;
+            if (!initializationStarted) {
+                initializeApp();
+            }
+        }
+        
+        // Final fallback timeout - ensure app shows no matter what
+        setTimeout(() => {
+            if (!initializationStarted) {
+                console.log('Final fallback: Force showing app');
+                initializeApp();
+            }
+        }, 2000);
+
+        // Make functions available globally
+        window.getCurrentUser = () => currentUser;
+        window.firebaseAvailable = () => firebaseAvailable;
     </script>
 </body>
 </html>
