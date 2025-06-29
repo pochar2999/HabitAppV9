@@ -120,10 +120,31 @@ const habitsData = {
 function saveData() {
     console.log('Saving data...', appData);
     if (window.authManager && window.authManager.getCurrentUser()) {
+        // Save to Firebase
         window.authManager.saveUserData();
     } else {
-        // Fallback to localStorage
+        // Fallback to localStorage for non-authenticated users
         localStorage.setItem('habitFlowData', JSON.stringify(appData));
+    }
+}
+
+function loadData() {
+    console.log('Loading data...');
+    if (window.authManager && window.authManager.getCurrentUser()) {
+        // Data will be loaded by authManager
+        console.log('User authenticated, data loaded by authManager');
+    } else {
+        // Load from localStorage for non-authenticated users
+        const savedData = localStorage.getItem('habitFlowData');
+        if (savedData) {
+            try {
+                const parsedData = JSON.parse(savedData);
+                appData = { ...appData, ...parsedData };
+                console.log('Loaded data from localStorage:', appData);
+            } catch (error) {
+                console.error('Error parsing saved data:', error);
+            }
+        }
     }
 }
 
@@ -370,7 +391,7 @@ function markHabitComplete(habitId) {
     
     saveData();
     updateHabitsScreen();
-    updateHomeScreen(); // Update home screen stats
+    updateHomeScreen();
     showSuccessMessage();
 }
 
@@ -392,7 +413,7 @@ function undoHabitComplete(habitId) {
     
     saveData();
     updateHabitsScreen();
-    updateHomeScreen(); // Update home screen stats
+    updateHomeScreen();
 }
 
 function showSuccessMessage() {
@@ -526,6 +547,9 @@ function generateProgressChart(habitId, habitData) {
 function initApp() {
     console.log('Initializing HabitFlow app...');
     
+    // Load data first
+    loadData();
+    
     // Set up navigation
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -583,6 +607,8 @@ window.undoHabitComplete = undoHabitComplete;
 window.initApp = initApp;
 window.updateHomeScreen = updateHomeScreen;
 window.appData = appData;
+window.saveData = saveData;
+window.loadData = loadData;
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
