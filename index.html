@@ -23,7 +23,7 @@
             <header class="header">
                 <div class="header-content">
                     <h1 class="app-title">HabitFlow</h1>
-                    <div class="greeting" id="greeting">Welcome back, User!</div>
+                    <div class="greeting" id="greeting">Welcome to HabitFlow!</div>
                     <div class="stats">
                         <div class="stat-item">
                             <span class="stat-number" id="days-logged">0</span>
@@ -34,20 +34,8 @@
                             <span class="stat-label">Active Habits</span>
                         </div>
                     </div>
-                    <div class="profile-container">
-                        <button id="profile-btn" class="profile-btn">
-                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" alt="Profile" class="profile-avatar">
-                        </button>
-                        <div id="profile-dropdown" class="profile-dropdown">
-                            <div class="profile-info">
-                                <div class="profile-name" id="profile-name">User Name</div>
-                                <div class="profile-email" id="profile-email">user@example.com</div>
-                            </div>
-                            <hr class="profile-divider">
-                            <button id="logout-btn" class="logout-btn">
-                                <span>Log Out</span>
-                            </button>
-                        </div>
+                    <div class="profile-container" id="profile-container">
+                        <!-- Auth buttons or profile dropdown will be inserted here -->
                     </div>
                 </div>
             </header>
@@ -301,102 +289,39 @@
             }
         }
 
-        function showLoadingScreen() {
-            console.log('Showing loading screen');
-            if (loadingScreen) {
-                loadingScreen.style.display = 'flex';
-            }
-            if (app) {
-                app.style.display = 'none';
-            }
-        }
-
-        // Set up profile dropdown functionality
-        function setupProfileDropdown() {
-            const profileBtn = document.getElementById('profile-btn');
-            const profileDropdown = document.getElementById('profile-dropdown');
-            const logoutBtn = document.getElementById('logout-btn');
-            
-            if (profileBtn && profileDropdown && logoutBtn) {
-                // Remove existing event listeners to prevent duplicates
-                const newProfileBtn = profileBtn.cloneNode(true);
-                profileBtn.parentNode.replaceChild(newProfileBtn, profileBtn);
-                
-                const newLogoutBtn = logoutBtn.cloneNode(true);
-                logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-                
-                // Add fresh event listeners
-                newProfileBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    profileDropdown.classList.toggle('show');
-                });
-                
-                // Close dropdown when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!newProfileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-                        profileDropdown.classList.remove('show');
-                    }
-                });
-                
-                // Logout functionality
-                newLogoutBtn.addEventListener('click', async () => {
-                    try {
-                        await authManager.logout();
-                    } catch (error) {
-                        console.error('Error signing out:', error);
-                    }
-                });
-            }
-        }
-
-        // Wait for user data to be loaded before showing the app
-        authManager.onUserDataLoad((user) => {
-            console.log('User data loaded callback triggered, user:', user ? user.email : 'none');
-            
-            if (user) {
-                // User is authenticated and data is loaded
-                setupProfileDropdown();
-                
-                // Update home screen with loaded data
-                if (window.updateHomeScreen) {
-                    window.updateHomeScreen();
-                }
-            }
-            
-            // Hide loading screen and show app (whether user is authenticated or not)
+        // Hide loading screen immediately and let app initialize
+        setTimeout(() => {
             hideLoadingScreen();
             
-            // Initialize the app after authentication and data loading is confirmed
+            // Initialize the app
             if (window.initApp) {
                 window.initApp();
             }
-        });
+        }, 1000); // Show loading for just 1 second for better UX
 
         // Make authManager available globally
         window.authManager = authManager;
         window.getCurrentUser = () => authManager.getCurrentUser();
         
-        // Fallback timeout to hide loading screen if auth takes too long
-        setTimeout(() => {
-            console.log('Timeout reached, checking auth state...');
-            console.log('Auth initialized:', authManager.isAuthInitialized());
-            console.log('User data loaded:', authManager.isUserDataLoaded());
+        // Set up auth state change listener for UI updates
+        authManager.onAuthStateChange((user) => {
+            console.log('Auth state changed in main script:', user ? user.email : 'none');
             
-            if (!authManager.isAuthInitialized() || !authManager.isUserDataLoaded()) {
-                console.warn('Auth/data loading timeout, forcing app to show');
-                
-                // Force hide loading screen
-                hideLoadingScreen();
-                
-                // If we're not on an auth page and no user, redirect to login
-                if (!authManager.isAuthPage() && !authManager.getCurrentUser()) {
-                    console.log('Redirecting to login due to timeout');
-                    window.location.href = 'login.html';
-                } else if (window.initApp) {
-                    window.initApp();
-                }
+            // Update home screen when auth state changes
+            if (window.updateHomeScreen) {
+                window.updateHomeScreen();
             }
-        }, 5000); // Reduced from 8000ms to 5000ms for GitHub Pages
+        });
+
+        // Set up user data load listener
+        authManager.onUserDataLoad((user) => {
+            console.log('User data loaded in main script:', user ? user.email : 'none');
+            
+            // Update home screen with loaded data
+            if (window.updateHomeScreen) {
+                window.updateHomeScreen();
+            }
+        });
     </script>
 </body>
 </html>

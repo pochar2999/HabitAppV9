@@ -9,38 +9,16 @@ class AuthManager {
     this.userDataLoaded = false;
     this.onAuthStateChangeCallbacks = [];
     this.onUserDataLoadCallbacks = [];
-    this.initializationTimeout = null;
     
+    // Initialize auth in background without blocking app
     this.initializeAuth();
   }
 
   initializeAuth() {
-    console.log('Initializing Firebase Auth...');
-    
-    // Set a shorter timeout for GitHub Pages
-    this.initializationTimeout = setTimeout(() => {
-      if (!this.authInitialized) {
-        console.warn('Auth initialization timeout, forcing completion');
-        this.authInitialized = true;
-        this.userDataLoaded = true;
-        
-        if (!this.isAuthPage()) {
-          console.log('No auth detected, redirecting to login');
-          window.location.href = 'login.html';
-        } else {
-          this.onUserDataLoadCallbacks.forEach(callback => callback(null));
-        }
-      }
-    }, 3000); // Reduced from 8000ms to 3000ms
+    console.log('Initializing Firebase Auth in background...');
     
     onAuthStateChanged(auth, async (user) => {
       console.log('Auth state changed:', user ? `User logged in: ${user.email}` : 'User logged out');
-      
-      // Clear timeout since auth state changed
-      if (this.initializationTimeout) {
-        clearTimeout(this.initializationTimeout);
-        this.initializationTimeout = null;
-      }
       
       this.authInitialized = true;
       this.currentUser = user;
@@ -51,7 +29,10 @@ class AuthManager {
           await this.loadUserData(user.uid);
           this.userDataLoaded = true;
           
-          console.log('User data loaded successfully, notifying callbacks');
+          // Update UI to show user is logged in
+          this.updateAuthUI(user);
+          
+          console.log('User data loaded successfully');
           this.onUserDataLoadCallbacks.forEach(callback => callback(user));
           
         } catch (error) {
@@ -60,24 +41,105 @@ class AuthManager {
           
           // Initialize with empty data if loading fails
           this.initializeEmptyUserData();
+          this.updateAuthUI(user);
           this.onUserDataLoadCallbacks.forEach(callback => callback(user));
         }
       } else {
         console.log('User not authenticated or email not verified');
         this.userDataLoaded = true;
         
-        if (!this.isAuthPage()) {
-          console.log('Redirecting to login page');
-          setTimeout(() => {
-            window.location.href = 'login.html';
-          }, 100);
-        } else {
-          this.onUserDataLoadCallbacks.forEach(callback => callback(null));
-        }
+        // Update UI to show login/signup buttons
+        this.updateAuthUI(null);
+        this.onUserDataLoadCallbacks.forEach(callback => callback(null));
       }
       
       this.onAuthStateChangeCallbacks.forEach(callback => callback(user));
     });
+  }
+
+  updateAuthUI(user) {
+    // Update profile section in header
+    const profileContainer = document.getElementById('profile-container');
+    if (!profileContainer) return;
+
+    if (user) {
+      // User is logged in - show profile dropdown
+      profileContainer.innerHTML = `
+        <button id="profile-btn" class="profile-btn">
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" alt="Profile" class="profile-avatar">
+        </button>
+        <div id="profile-dropdown" class="profile-dropdown">
+          <div class="profile-info">
+            <div class="profile-name" id="profile-name">${user.displayName || user.email.split('@')[0]}</div>
+            <div class="profile-email" id="profile-email">${user.email}</div>
+          </div>
+          <hr class="profile-divider">
+          <button id="logout-btn" class="logout-btn">
+            <span>Log Out</span>
+          </button>
+        </div>
+      `;
+      
+      // Set up profile dropdown functionality
+      this.setupProfileDropdown();
+    } else {
+      // User is not logged in - show login/signup buttons
+      profileContainer.innerHTML = `
+        <div class="auth-buttons">
+          <button id="login-btn" class="auth-header-btn login">Login</button>
+          <button id="signup-btn" class="auth-header-btn signup">Sign Up</button>
+        </div>
+      `;
+      
+      // Set up auth button functionality
+      this.setupAuthButtons();
+    }
+  }
+
+  setupProfileDropdown() {
+    const profileBtn = document.getElementById('profile-btn');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    if (profileBtn && profileDropdown && logoutBtn) {
+      profileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('show');
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+          profileDropdown.classList.remove('show');
+        }
+      });
+      
+      // Logout functionality
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await this.logout();
+        } catch (error) {
+          console.error('Error signing out:', error);
+        }
+      });
+    }
+  }
+
+  setupAuthButtons() {
+    const loginBtn = document.getElementById('login-btn');
+    const signupBtn = document.getElementById('signup-btn');
+    
+    if (loginBtn) {
+      loginBtn.addEventListener('click', () => {
+        window.location.href = 'login.html';
+      });
+    }
+    
+    if (signupBtn) {
+      signupBtn.addEventListener('click', () => {
+        window.location.href = 'signup.html';
+      });
+    }
   }
 
   async loadUserData(userId) {
@@ -99,8 +161,8 @@ class AuthManager {
           console.log('Updated global appData:', window.appData);
         }
         
-        // Update UI elements with user info
-        this.updateUserProfile(userData, userId);
+        // Update greeting
+        this.updateGreeting(userData, userId);
         
         console.log('User data loaded successfully');
         return appData;
@@ -121,6 +183,22 @@ class AuthManager {
     } catch (error) {
       console.error('Error in loadUserData:', error);
       throw error;
+    }
+  }
+
+  updateGreeting(userData, userId) {
+    try {
+      const user = this.currentUser;
+      if (!user) return;
+
+      // Update greeting
+      const greeting = document.getElementById("greeting");
+      if (greeting) {
+        const displayName = userData.name || user.displayName || user.email.split('@')[0];
+        greeting.textContent = `Welcome back, ${displayName}!`;
+      }
+    } catch (error) {
+      console.error('Error updating greeting:', error);
     }
   }
 
@@ -204,44 +282,16 @@ class AuthManager {
     }
   }
 
-  updateUserProfile(userData, userId) {
-    try {
-      const user = this.currentUser;
-      if (!user) return;
-
-      // Update greeting
-      const greeting = document.getElementById("greeting");
-      if (greeting) {
-        const displayName = userData.name || user.displayName || user.email.split('@')[0];
-        greeting.textContent = `Welcome back, ${displayName}!`;
+  // Check if user needs to login for certain actions
+  requireAuth(action = 'perform this action') {
+    if (!this.currentUser) {
+      const shouldLogin = confirm(`Please log in to ${action}. Would you like to go to the login page?`);
+      if (shouldLogin) {
+        window.location.href = 'login.html';
       }
-
-      // Update profile dropdown
-      const profileName = document.getElementById("profile-name");
-      const profileEmail = document.getElementById("profile-email");
-      
-      if (profileName) {
-        profileName.textContent = userData.name || user.displayName || user.email.split('@')[0];
-      }
-      
-      if (profileEmail) {
-        profileEmail.textContent = user.email;
-      }
-
-      // Show profile button
-      const profileBtn = document.getElementById('profile-btn');
-      if (profileBtn) {
-        profileBtn.style.display = 'block';
-      }
-    } catch (error) {
-      console.error('Error updating user profile:', error);
+      return false;
     }
-  }
-
-  isAuthPage() {
-    const authPages = ['login.html', 'signup.html', 'forgot.html', 'verify.html', 'profile.html'];
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    return authPages.includes(currentPage);
+    return true;
   }
 
   async logout() {
@@ -259,13 +309,20 @@ class AuthManager {
       this.currentUser = null;
       this.userDataLoaded = false;
       
-      // Reset app data
+      // Reset app data to default
       if (window.appData) {
         window.appData = { ...this.getDefaultAppData() };
       }
       
-      // Redirect to login
-      window.location.href = 'login.html';
+      // Update UI
+      this.updateAuthUI(null);
+      
+      // Update home screen
+      if (window.updateHomeScreen) {
+        window.updateHomeScreen();
+      }
+      
+      console.log('User logged out successfully');
     } catch (error) {
       console.error('Error signing out:', error);
     }

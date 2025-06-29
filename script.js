@@ -280,6 +280,11 @@ function selectHabit(habitId, type) {
 function startHabit() {
     if (!currentHabit) return;
     
+    // Check if user is authenticated before allowing habit creation
+    if (window.authManager && !window.authManager.requireAuth('add habits')) {
+        return;
+    }
+    
     const today = new Date().toDateString();
     
     // Initialize habit data
@@ -370,6 +375,11 @@ function updateHabitsScreen() {
 }
 
 function markHabitComplete(habitId) {
+    // Check if user is authenticated before allowing habit completion
+    if (window.authManager && !window.authManager.requireAuth('mark habits as complete')) {
+        return;
+    }
+    
     const today = new Date().toDateString();
     const habitData = appData.habits[habitId];
     
