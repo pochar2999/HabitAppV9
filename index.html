@@ -8,16 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen">
-        <div class="loading-content">
-            <h1 class="loading-title">HabitFlow</h1>
-            <div class="loading-spinner"></div>
-            <p class="loading-text">Loading your habits...</p>
-        </div>
-    </div>
-
-    <div id="app" style="display: none;">
+    <div id="app">
         <!-- Home Screen -->
         <div id="home-screen" class="screen active">
             <header class="header">
@@ -35,7 +26,7 @@
                         </div>
                     </div>
                     <div class="profile-container" id="profile-container">
-                        <!-- Auth buttons or profile dropdown will be inserted here -->
+                        <!-- Profile dropdown will be inserted here -->
                     </div>
                 </div>
             </header>
@@ -275,47 +266,41 @@
     <script type="module">
         import authManager from './src/auth/auth-manager.js';
 
-        // Show loading screen initially
-        const loadingScreen = document.getElementById('loading-screen');
+        // Hide app initially until auth is confirmed
         const app = document.getElementById('app');
-
-        function hideLoadingScreen() {
-            console.log('Hiding loading screen');
-            if (loadingScreen) {
-                loadingScreen.style.display = 'none';
-            }
-            if (app) {
-                app.style.display = 'block';
-            }
-        }
-
-        // Hide loading screen immediately and let app initialize
-        setTimeout(() => {
-            hideLoadingScreen();
-            
-            // Initialize the app
-            if (window.initApp) {
-                window.initApp();
-            }
-        }, 1000); // Show loading for just 1 second for better UX
+        app.style.display = 'none';
 
         // Make authManager available globally
         window.authManager = authManager;
         window.getCurrentUser = () => authManager.getCurrentUser();
         
-        // Set up auth state change listener for UI updates
+        // Set up auth state change listener
         authManager.onAuthStateChange((user) => {
-            console.log('Auth state changed in main script:', user ? user.email : 'none');
+            console.log('Auth state changed:', user ? user.email : 'none');
             
-            // Update home screen when auth state changes
-            if (window.updateHomeScreen) {
-                window.updateHomeScreen();
+            if (user && user.emailVerified) {
+                // User is authenticated and verified - show app
+                app.style.display = 'block';
+                
+                // Initialize the app
+                if (window.initApp) {
+                    window.initApp();
+                }
+                
+                // Update home screen
+                if (window.updateHomeScreen) {
+                    window.updateHomeScreen();
+                }
+            } else {
+                // User is not authenticated - redirect to login
+                console.log('User not authenticated, redirecting to login');
+                window.location.href = 'login.html';
             }
         });
 
         // Set up user data load listener
         authManager.onUserDataLoad((user) => {
-            console.log('User data loaded in main script:', user ? user.email : 'none');
+            console.log('User data loaded:', user ? user.email : 'none');
             
             // Update home screen with loaded data
             if (window.updateHomeScreen) {

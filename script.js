@@ -123,29 +123,15 @@ function saveData() {
         // Save to Firebase
         window.authManager.saveUserData();
     } else {
-        // Fallback to localStorage for non-authenticated users
+        // Fallback to localStorage for non-authenticated users (shouldn't happen now)
         localStorage.setItem('habitFlowData', JSON.stringify(appData));
     }
 }
 
 function loadData() {
     console.log('Loading data...');
-    if (window.authManager && window.authManager.getCurrentUser()) {
-        // Data will be loaded by authManager
-        console.log('User authenticated, data loaded by authManager');
-    } else {
-        // Load from localStorage for non-authenticated users
-        const savedData = localStorage.getItem('habitFlowData');
-        if (savedData) {
-            try {
-                const parsedData = JSON.parse(savedData);
-                appData = { ...appData, ...parsedData };
-                console.log('Loaded data from localStorage:', appData);
-            } catch (error) {
-                console.error('Error parsing saved data:', error);
-            }
-        }
-    }
+    // Data will be loaded by authManager for authenticated users
+    console.log('User authenticated, data loaded by authManager');
 }
 
 // Navigation Functions
@@ -280,11 +266,6 @@ function selectHabit(habitId, type) {
 function startHabit() {
     if (!currentHabit) return;
     
-    // Check if user is authenticated before allowing habit creation
-    if (window.authManager && !window.authManager.requireAuth('add habits')) {
-        return;
-    }
-    
     const today = new Date().toDateString();
     
     // Initialize habit data
@@ -375,11 +356,6 @@ function updateHabitsScreen() {
 }
 
 function markHabitComplete(habitId) {
-    // Check if user is authenticated before allowing habit completion
-    if (window.authManager && !window.authManager.requireAuth('mark habits as complete')) {
-        return;
-    }
-    
     const today = new Date().toDateString();
     const habitData = appData.habits[habitId];
     

@@ -10,12 +10,12 @@ class AuthManager {
     this.onAuthStateChangeCallbacks = [];
     this.onUserDataLoadCallbacks = [];
     
-    // Initialize auth in background without blocking app
+    // Initialize auth immediately
     this.initializeAuth();
   }
 
   initializeAuth() {
-    console.log('Initializing Firebase Auth in background...');
+    console.log('Initializing Firebase Auth...');
     
     onAuthStateChanged(auth, async (user) => {
       console.log('Auth state changed:', user ? `User logged in: ${user.email}` : 'User logged out');
@@ -48,11 +48,13 @@ class AuthManager {
         console.log('User not authenticated or email not verified');
         this.userDataLoaded = true;
         
-        // Update UI to show login/signup buttons
+        // Clear any existing data
+        this.initializeEmptyUserData();
         this.updateAuthUI(null);
         this.onUserDataLoadCallbacks.forEach(callback => callback(null));
       }
       
+      // Always call auth state change callbacks
       this.onAuthStateChangeCallbacks.forEach(callback => callback(user));
     });
   }
@@ -63,7 +65,7 @@ class AuthManager {
     if (!profileContainer) return;
 
     if (user) {
-      // User is logged in - show profile dropdown
+      // User is logged in - show profile dropdown only
       profileContainer.innerHTML = `
         <button id="profile-btn" class="profile-btn">
           <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" alt="Profile" class="profile-avatar">
@@ -83,16 +85,8 @@ class AuthManager {
       // Set up profile dropdown functionality
       this.setupProfileDropdown();
     } else {
-      // User is not logged in - show login/signup buttons
-      profileContainer.innerHTML = `
-        <div class="auth-buttons">
-          <button id="login-btn" class="auth-header-btn login">Login</button>
-          <button id="signup-btn" class="auth-header-btn signup">Sign Up</button>
-        </div>
-      `;
-      
-      // Set up auth button functionality
-      this.setupAuthButtons();
+      // Clear profile container when not logged in
+      profileContainer.innerHTML = '';
     }
   }
 
@@ -121,23 +115,6 @@ class AuthManager {
         } catch (error) {
           console.error('Error signing out:', error);
         }
-      });
-    }
-  }
-
-  setupAuthButtons() {
-    const loginBtn = document.getElementById('login-btn');
-    const signupBtn = document.getElementById('signup-btn');
-    
-    if (loginBtn) {
-      loginBtn.addEventListener('click', () => {
-        window.location.href = 'login.html';
-      });
-    }
-    
-    if (signupBtn) {
-      signupBtn.addEventListener('click', () => {
-        window.location.href = 'signup.html';
       });
     }
   }
@@ -282,18 +259,6 @@ class AuthManager {
     }
   }
 
-  // Check if user needs to login for certain actions
-  requireAuth(action = 'perform this action') {
-    if (!this.currentUser) {
-      const shouldLogin = confirm(`Please log in to ${action}. Would you like to go to the login page?`);
-      if (shouldLogin) {
-        window.location.href = 'login.html';
-      }
-      return false;
-    }
-    return true;
-  }
-
   async logout() {
     try {
       console.log('Logging out user');
@@ -314,13 +279,8 @@ class AuthManager {
         window.appData = { ...this.getDefaultAppData() };
       }
       
-      // Update UI
-      this.updateAuthUI(null);
-      
-      // Update home screen
-      if (window.updateHomeScreen) {
-        window.updateHomeScreen();
-      }
+      // Redirect to login page
+      window.location.href = 'login.html';
       
       console.log('User logged out successfully');
     } catch (error) {
