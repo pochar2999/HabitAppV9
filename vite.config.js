@@ -6,6 +6,14 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     rollupOptions: {
+      input: {
+        main: 'index.html',
+        login: 'login.html',
+        signup: 'signup.html',
+        forgot: 'forgot.html',
+        verify: 'verify.html',
+        profile: 'profile.html'
+      },
       output: {
         manualChunks: undefined,
       },
