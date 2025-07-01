@@ -1,9 +1,7 @@
+
+// This file is not used in the HabitFlow app
+// The counter functionality has been replaced with habit tracking
 export function setupCounter(element) {
-  let counter = 0
-  const setCounter = (count) => {
-    counter = count
-    element.innerHTML = `count is ${counter}`
-  }
-  element.addEventListener('click', () => setCounter(counter + 1))
-  setCounter(0)
+  // Removed counter functionality
+  console.log('Counter setup called but not implemented for HabitFlow app');
 }
