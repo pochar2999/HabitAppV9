@@ -1,19 +1,13 @@
 import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  plugins: [react()],
   base: './',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
     rollupOptions: {
-      input: {
-        main: 'index.html',
-        login: 'login.html',
-        signup: 'signup.html',
-        forgot: 'forgot.html',
-        verify: 'verify.html',
-        profile: 'profile.html'
-      },
       output: {
         manualChunks: undefined,
       },
@@ -27,7 +21,6 @@ export default defineConfig({
       '.replit.dev'
     ]
   },
-  // Ensure proper handling of ES modules for GitHub Pages
   esbuild: {
     target: 'es2020'
   },
