@@ -1,26 +1,36 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useHabits } from '../contexts/HabitContext'
+import { getHabitTargetCount } from '../data/habitPreferences'
 
 export default function HabitPreferencesModal({ 
   isOpen, 
   onClose, 
   habitId, 
   habitName,
-  preferenceConfig 
+  preferenceConfig,
+  onSave = null,
+  isInitialSetup = false
 }) {
   const { currentUser, updateUserData, getUserData } = useAuth()
-  const { loadUserData } = useHabits()
+  const { loadUserData, updateHabitPreferences } = useHabits()
   const [preferences, setPreferences] = useState({})
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
   // Load existing preferences when modal opens
   useEffect(() => {
-    if (isOpen && habitId) {
+    if (isOpen && habitId && !isInitialSetup) {
       loadPreferences()
+    } else if (isOpen && isInitialSetup) {
+      // Initialize with default values for initial setup
+      const initialPrefs = {}
+      preferenceConfig.fields.forEach(field => {
+        initialPrefs[field.key] = field.defaultValue || ''
+      })
+      setPreferences(initialPrefs)
     }
-  }, [isOpen, habitId])
+  }, [isOpen, habitId, isInitialSetup])
 
   const loadPreferences = async () => {
     try {
@@ -59,27 +69,14 @@ export default function HabitPreferencesModal({
     try {
       setSaving(true)
       
-      // Get current user data
-      const userData = await getUserData(currentUser.uid) || {}
-      
-      // Update habit preferences
-      const updatedPreferences = {
-        ...userData.habitPreferences,
-        [habitId]: {
-          ...preferences,
-          lastUpdated: new Date().toISOString()
-        }
+      if (isInitialSetup && onSave) {
+        // For initial setup, just call the onSave callback
+        onSave(preferences)
+      } else {
+        // For editing existing preferences
+        updateHabitPreferences(habitId, preferences)
+        onClose()
       }
-
-      // Save to Firestore
-      await updateUserData(currentUser.uid, {
-        habitPreferences: updatedPreferences
-      })
-
-      // Reload user data to sync with context
-      await loadUserData()
-      
-      onClose()
     } catch (error) {
       console.error('Error saving preferences:', error)
       alert('Error saving preferences. Please try again.')
@@ -161,11 +158,13 @@ export default function HabitPreferencesModal({
 
   if (!isOpen) return null
 
+  const targetCount = getHabitTargetCount(habitId, preferences)
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>{habitName} Preferences</h3>
+          <h3>{isInitialSetup ? `Set up ${habitName}` : `${habitName} Preferences`}</h3>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         
@@ -186,6 +185,15 @@ export default function HabitPreferencesModal({
                   {renderField(field)}
                 </div>
               ))}
+              
+              {preferenceConfig.completionType === 'multi' && (
+                <div className="completion-info">
+                  <p className="completion-note">
+                    📊 This habit will track <strong>{targetCount}</strong> completions per day.
+                    You can tap multiple times to track your progress!
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -199,7 +207,7 @@ export default function HabitPreferencesModal({
             onClick={handleSave}
             disabled={saving || loading}
           >
-            {saving ? 'Saving...' : 'Save Preferences'}
+            {saving ? 'Saving...' : (isInitialSetup ? 'Start Habit' : 'Save Preferences')}
           </button>
         </div>
       </div>

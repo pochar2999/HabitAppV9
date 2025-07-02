@@ -42,7 +42,9 @@ export const habitPreferencesConfig = {
         defaultValue: '250',
         description: 'What size container do you typically use?'
       }
-    ]
+    ],
+    completionType: 'multi',
+    getTargetCount: (preferences) => preferences.dailyGlasses || 8
   },
   'meditation': {
     fields: [
@@ -89,7 +91,9 @@ export const habitPreferencesConfig = {
         placeholder: '7:00 AM',
         description: 'When should we remind you to meditate?'
       }
-    ]
+    ],
+    completionType: 'single',
+    getTargetCount: () => 1
   },
   'exercise': {
     fields: [
@@ -140,7 +144,9 @@ export const habitPreferencesConfig = {
         defaultValue: 5,
         description: 'How many days per week do you want to exercise?'
       }
-    ]
+    ],
+    completionType: 'single',
+    getTargetCount: () => 1
   },
   'reading': {
     fields: [
@@ -182,7 +188,9 @@ export const habitPreferencesConfig = {
         defaultValue: 'mixed',
         description: 'What type of books do you enjoy most?'
       }
-    ]
+    ],
+    completionType: 'multi',
+    getTargetCount: (preferences) => preferences.dailyPages || 10
   },
   'wake-early': {
     fields: [
@@ -218,7 +226,9 @@ export const habitPreferencesConfig = {
         defaultValue: 8,
         description: 'How many hours of sleep do you need?'
       }
-    ]
+    ],
+    completionType: 'single',
+    getTargetCount: () => 1
   }
 }
 
@@ -230,4 +240,19 @@ export function getHabitPreferenceConfig(habitId) {
 // Helper function to check if a habit has custom preferences
 export function hasCustomPreferences(habitId) {
   return habitId in habitPreferencesConfig
+}
+
+// Helper function to get completion type for a habit
+export function getHabitCompletionType(habitId) {
+  const config = habitPreferencesConfig[habitId]
+  return config?.completionType || 'single'
+}
+
+// Helper function to get target count for a habit based on preferences
+export function getHabitTargetCount(habitId, preferences = {}) {
+  const config = habitPreferencesConfig[habitId]
+  if (config?.getTargetCount) {
+    return config.getTargetCount(preferences)
+  }
+  return 1
 }

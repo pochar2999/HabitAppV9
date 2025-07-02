@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useHabits } from '../contexts/HabitContext'
 
 export default function Progress() {
   const navigate = useNavigate()
-  const { habits, habitCompletion } = useHabits()
+  const { habits, habitCompletion, getWeeklyAnalyticsSummary } = useHabits()
+  const [selectedHabit, setSelectedHabit] = useState(null)
   
   const habitsList = Object.values(habits)
 
@@ -22,7 +23,7 @@ export default function Progress() {
       date.setDate(date.getDate() - i)
       const dateStr = date.toISOString().split('T')[0]
       
-      const completed = habitCompletion[dateStr]?.includes(habitId) || false
+      const completed = habitCompletion[dateStr]?.[habitId]?.completed || false
       last7Days.push({
         date: dateStr,
         day: `${date.getDate()}/${date.getMonth() + 1}`,
@@ -43,7 +44,7 @@ export default function Progress() {
       
       if (new Date(dateStr) >= new Date(habit.createdAt?.split('T')[0] || dateStr)) {
         totalDays++
-        if (habitCompletion[dateStr]?.includes(habitId)) {
+        if (habitCompletion[dateStr]?.[habitId]?.completed) {
           completedDays++
         }
       }
@@ -57,6 +58,48 @@ export default function Progress() {
       success: successRate,
       last7Days
     }
+  }
+
+  const renderAnalyticsSummary = (habitId) => {
+    const summary = getWeeklyAnalyticsSummary(habitId)
+    if (!summary) return null
+
+    return (
+      <div className="analytics-summary">
+        <h5>Weekly Insights</h5>
+        <div className="analytics-grid">
+          <div className="analytics-item">
+            <span className="analytics-label">Mood Impact:</span>
+            <span className={`analytics-value ${summary.moodImprovement > 0 ? 'positive' : summary.moodImprovement < 0 ? 'negative' : 'neutral'}`}>
+              {summary.moodImprovement > 0 ? '+' : ''}{summary.moodImprovement}
+            </span>
+          </div>
+          <div className="analytics-item">
+            <span className="analytics-label">Avg Effort:</span>
+            <span className="analytics-value">{summary.avgEffort}/5</span>
+          </div>
+          <div className="analytics-item">
+            <span className="analytics-label">Mood Before:</span>
+            <span className="analytics-value">{summary.avgMoodBefore}/5</span>
+          </div>
+          <div className="analytics-item">
+            <span className="analytics-label">Mood After:</span>
+            <span className="analytics-value">{summary.avgMoodAfter}/5</span>
+          </div>
+        </div>
+        <div className="analytics-insight">
+          {summary.moodImprovement > 0.5 && (
+            <p className="insight positive">💡 This habit consistently boosts your mood!</p>
+          )}
+          {summary.avgEffort > 4 && summary.moodImprovement > 0 && (
+            <p className="insight warning">💪 High effort but great results - consider making it easier to maintain.</p>
+          )}
+          {summary.moodImprovement < -0.5 && (
+            <p className="insight negative">🤔 This habit might be causing stress. Consider adjusting your approach.</p>
+          )}
+        </div>
+      </div>
+    )
   }
 
   if (habitsList.length === 0) {
@@ -132,6 +175,8 @@ export default function Progress() {
                   ))}
                 </div>
               </div>
+
+              {renderAnalyticsSummary(habit.id)}
             </div>
           )
         })}

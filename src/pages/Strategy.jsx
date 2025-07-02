@@ -1,16 +1,21 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
+import HabitPreferencesModal from '../components/HabitPreferencesModal'
 import { useHabits } from '../contexts/HabitContext'
 import { habitsData } from '../data/habitsData'
+import { getHabitPreferenceConfig, getHabitCompletionType, getHabitTargetCount } from '../data/habitPreferences'
 
 export default function Strategy() {
   const { habitId, type } = useParams()
   const navigate = useNavigate()
   const { addHabit } = useHabits()
+  const [showPreferencesModal, setShowPreferencesModal] = useState(false)
+  const [habitPreferences, setHabitPreferences] = useState({})
   
   const habit = habitsData[habitId]
   const backTo = type === 'build' ? '/build-habits' : '/break-habits'
+  const preferenceConfig = getHabitPreferenceConfig(habitId)
 
   if (!habit) {
     return (
@@ -23,14 +28,35 @@ export default function Strategy() {
   }
 
   const handleStartHabit = () => {
+    if (preferenceConfig) {
+      setShowPreferencesModal(true)
+    } else {
+      // Add habit without preferences
+      addHabitToUser({})
+    }
+  }
+
+  const addHabitToUser = (preferences) => {
+    const completionType = getHabitCompletionType(habitId)
+    const targetCount = getHabitTargetCount(habitId, preferences)
+    
     addHabit(habitId, {
       name: habit.name,
       type: habit.type,
       image: habit.image,
-      description: habit.description
+      description: habit.description,
+      completionType,
+      targetCount,
+      preferences
     })
     
     navigate('/my-habits')
+  }
+
+  const handlePreferencesSave = (preferences) => {
+    setHabitPreferences(preferences)
+    addHabitToUser(preferences)
+    setShowPreferencesModal(false)
   }
 
   return (
@@ -61,6 +87,18 @@ export default function Strategy() {
           {type === 'build' ? 'Start Habit Plan' : 'Start Breaking Plan'}
         </button>
       </div>
+
+      {preferenceConfig && (
+        <HabitPreferencesModal
+          isOpen={showPreferencesModal}
+          onClose={() => setShowPreferencesModal(false)}
+          habitId={habitId}
+          habitName={habit.name}
+          preferenceConfig={preferenceConfig}
+          onSave={handlePreferencesSave}
+          isInitialSetup={true}
+        />
+      )}
     </Layout>
   )
 }
