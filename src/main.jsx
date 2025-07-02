@@ -5,7 +5,7 @@ import App from './App.jsx'
 import './index.css'
 
 // Get the base URL for GitHub Pages
-const basename = import.meta.env.DEV ? '/' : '/habitflow-react/'
+const basename = import.meta.env.DEV ? '/' : '/3njvyhyj/'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
