@@ -9,7 +9,7 @@ export default function HabitPreferencesModal({
   habitName,
   preferenceConfig 
 }) {
-  const { currentUser, updateUserData } = useAuth()
+  const { currentUser, updateUserData, getUserData } = useAuth()
   const { loadUserData } = useHabits()
   const [preferences, setPreferences] = useState({})
   const [loading, setLoading] = useState(false)
