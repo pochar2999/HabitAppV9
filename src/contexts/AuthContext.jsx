@@ -36,7 +36,8 @@ export function AuthProvider({ children }) {
       lastLogin: new Date(),
       habits: {},
       habitCompletion: {},
-      activityLog: {}
+      activityLog: {},
+      habitPreferences: {}
     })
 
     return userCred

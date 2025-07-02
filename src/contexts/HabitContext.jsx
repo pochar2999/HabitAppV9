@@ -12,6 +12,7 @@ export function HabitProvider({ children }) {
   const [habits, setHabits] = useState({})
   const [habitCompletion, setHabitCompletion] = useState({})
   const [activityLog, setActivityLog] = useState({})
+  const [habitPreferences, setHabitPreferences] = useState({})
   const [loading, setLoading] = useState(true)
 
   // Load user data when user changes
@@ -22,6 +23,7 @@ export function HabitProvider({ children }) {
       setHabits({})
       setHabitCompletion({})
       setActivityLog({})
+      setHabitPreferences({})
       setLoading(false)
     }
   }, [currentUser])
@@ -34,6 +36,7 @@ export function HabitProvider({ children }) {
         setHabits(userData.habits || {})
         setHabitCompletion(userData.habitCompletion || {})
         setActivityLog(userData.activityLog || {})
+        setHabitPreferences(userData.habitPreferences || {})
       }
     } catch (error) {
       console.error('Error loading user data:', error)
@@ -50,6 +53,7 @@ export function HabitProvider({ children }) {
         habits,
         habitCompletion,
         activityLog,
+        habitPreferences,
         lastUpdated: new Date()
       })
     } catch (error) {
@@ -88,6 +92,11 @@ export function HabitProvider({ children }) {
       }
     })
     setHabitCompletion(newCompletion)
+
+    // Remove preferences
+    const newPreferences = { ...habitPreferences }
+    delete newPreferences[habitId]
+    setHabitPreferences(newPreferences)
   }
 
   function completeHabit(habitId) {
@@ -209,17 +218,33 @@ export function HabitProvider({ children }) {
     return weekData
   }
 
+  function getHabitPreferences(habitId) {
+    return habitPreferences[habitId] || {}
+  }
+
+  function updateHabitPreferences(habitId, preferences) {
+    const newPreferences = {
+      ...habitPreferences,
+      [habitId]: {
+        ...preferences,
+        lastUpdated: new Date().toISOString()
+      }
+    }
+    setHabitPreferences(newPreferences)
+  }
+
   // Auto-save when data changes
   useEffect(() => {
     if (!loading && currentUser) {
       saveUserData()
     }
-  }, [habits, habitCompletion, activityLog])
+  }, [habits, habitCompletion, activityLog, habitPreferences])
 
   const value = {
     habits,
     habitCompletion,
     activityLog,
+    habitPreferences,
     loading,
     addHabit,
     removeHabit,
@@ -229,6 +254,8 @@ export function HabitProvider({ children }) {
     getActiveHabitsCount,
     getCurrentStreak,
     getWeeklyProgress,
+    getHabitPreferences,
+    updateHabitPreferences,
     loadUserData
   }
 
