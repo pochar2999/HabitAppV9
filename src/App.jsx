@@ -13,6 +13,8 @@ import BuildHabits from './pages/BuildHabits'
 import BreakHabits from './pages/BreakHabits'
 import Strategy from './pages/Strategy'
 import MyHabits from './pages/MyHabits'
+import HabitStacks from './pages/HabitStacks'
+import Journal from './pages/Journal'
 import MyCommunity from './pages/MyCommunity'
 import ServerView from './pages/ServerView'
 import Progress from './pages/Progress'
@@ -52,6 +54,16 @@ function App() {
               <Route path="/my-habits" element={
                 <ProtectedRoute>
                   <MyHabits />
+                </ProtectedRoute>
+              } />
+              <Route path="/habit-stacks" element={
+                <ProtectedRoute>
+                  <HabitStacks />
+                </ProtectedRoute>
+              } />
+              <Route path="/journal" element={
+                <ProtectedRoute>
+                  <Journal />
                 </ProtectedRoute>
               } />
               <Route path="/my-community" element={

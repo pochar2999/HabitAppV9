@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import HabitPreferencesModal from '../components/HabitPreferencesModal'
-import HabitAnalyticsModal from '../components/HabitAnalyticsModal'
 import HabitStackBuilder from '../components/HabitStackBuilder'
 import { useHabits } from '../contexts/HabitContext'
 import { getHabitPreferenceConfig, hasCustomPreferences } from '../data/habitPreferences'
@@ -13,10 +12,8 @@ export default function MyHabits() {
     habits, 
     removeHabit, 
     completeHabit, 
-    uncompleteHabit, 
-    updateHabitProgress,
+    uncompleteHabit,
     isHabitCompletedToday,
-    getHabitProgressToday,
     getHabitPreferences,
     getHabitStacks,
     deleteHabitStack
@@ -24,7 +21,6 @@ export default function MyHabits() {
 
   const [selectedHabit, setSelectedHabit] = useState(null)
   const [showPreferencesModal, setShowPreferencesModal] = useState(false)
-  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false)
   const [showStackBuilder, setShowStackBuilder] = useState(false)
   const [editingStack, setEditingStack] = useState(null)
   const [activeTab, setActiveTab] = useState('habits') // 'habits' or 'stacks'
@@ -33,50 +29,10 @@ export default function MyHabits() {
   const habitStacks = getHabitStacks()
 
   const handleCompleteHabit = (habitId) => {
-    const habit = habits[habitId]
-    if (!habit) return
-
-    if (habit.completionType === 'multi') {
-      const progress = getHabitProgressToday(habitId)
-      if (progress.completed) {
-        // If already completed, undo the completion
-        uncompleteHabit(habitId)
-      } else {
-        // For multi-completion habits, don't show analytics on individual taps
-        // Only show when the full habit is completed via progress buttons
-        if (isHabitCompletedToday(habitId)) {
-          uncompleteHabit(habitId)
-        } else {
-          // Show analytics modal but don't complete yet - let modal handle completion
-          setSelectedHabit(habit)
-          setShowAnalyticsModal(true)
-        }
-      }
+    if (isHabitCompletedToday(habitId)) {
+      uncompleteHabit(habitId)
     } else {
-      if (isHabitCompletedToday(habitId)) {
-        uncompleteHabit(habitId)
-      } else {
-        // Show analytics modal but don't complete yet - let modal handle completion
-        setSelectedHabit(habit)
-        setShowAnalyticsModal(true)
-      }
-    }
-  }
-
-  const handleProgressTap = (habitId, targetProgress) => {
-    const currentProgress = getHabitProgressToday(habitId)
-    
-    // Set progress to the tapped button number
-    const progressDiff = targetProgress - currentProgress.current
-    if (progressDiff > 0) {
-      updateHabitProgress(habitId, progressDiff)
-      
-      // Check if this tap completed the habit
-      if (targetProgress >= currentProgress.target) {
-        const habit = habits[habitId]
-        setSelectedHabit(habit)
-        setShowAnalyticsModal(true)
-      }
+      completeHabit(habitId)
     }
   }
 
@@ -109,11 +65,6 @@ export default function MyHabits() {
     setSelectedHabit(null)
   }
 
-  const closeAnalyticsModal = () => {
-    setShowAnalyticsModal(false)
-    setSelectedHabit(null)
-  }
-
   const closeStackBuilder = () => {
     setShowStackBuilder(false)
     setEditingStack(null)
@@ -142,71 +93,6 @@ export default function MyHabits() {
         })}
       </div>
     )
-  }
-
-  const renderProgressButtons = (habit) => {
-    const progress = getHabitProgressToday(habit.id)
-    
-    if (habit.completionType === 'multi') {
-      return (
-        <div className="multi-progress-container">
-          <div className="progress-info">
-            <span className="progress-text">
-              {progress.current} / {progress.target} completed
-            </span>
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${(progress.current / progress.target) * 100}%` }}
-              />
-            </div>
-          </div>
-          <div className="progress-buttons">
-            {Array.from({ length: progress.target }, (_, index) => (
-              <button
-                key={index}
-                className={`progress-btn ${index < progress.current ? 'completed' : ''}`}
-                onClick={() => index >= progress.current ? handleProgressTap(habit.id, index + 1) : null}
-                disabled={index < progress.current}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
-          {progress.completed && (
-            <button 
-              className="undo-btn" 
-              onClick={() => uncompleteHabit(habit.id)}
-            >
-              Reset Today
-            </button>
-          )}
-        </div>
-      )
-    } else {
-      const isCompleted = isHabitCompletedToday(habit.id)
-      return (
-        <div className="habit-actions">
-          <button
-            className={`action-btn ${habit.type === 'build' ? 'complete' : 'resist'} ${isCompleted ? (habit.type === 'build' ? 'completed' : 'resisted') : ''}`}
-            onClick={() => handleCompleteHabit(habit.id)}
-          >
-            {isCompleted 
-              ? (habit.type === 'build' ? 'Completed Today!' : 'Resisted Today!')
-              : (habit.type === 'build' ? 'Mark Complete' : 'Mark Resisted')
-            }
-          </button>
-          {isCompleted && (
-            <button 
-              className="undo-btn" 
-              onClick={() => uncompleteHabit(habit.id)}
-            >
-              Undo
-            </button>
-          )}
-        </div>
-      )
-    }
   }
 
   if (habitsList.length === 0 && habitStacks.length === 0) {
@@ -252,6 +138,7 @@ export default function MyHabits() {
           <div className="habits-tab-content">
             {habitsList.map((habit) => {
               const hasPreferences = hasCustomPreferences(habit.id)
+              const isCompleted = isHabitCompletedToday(habit.id)
               
               return (
                 <div key={habit.id} className="habit-item">
@@ -288,7 +175,25 @@ export default function MyHabits() {
 
                   {hasPreferences && renderHabitPreferences(habit.id)}
                   
-                  {renderProgressButtons(habit)}
+                  <div className="habit-actions">
+                    <button
+                      className={`action-btn ${habit.type === 'build' ? 'complete' : 'resist'} ${isCompleted ? (habit.type === 'build' ? 'completed' : 'resisted') : ''}`}
+                      onClick={() => handleCompleteHabit(habit.id)}
+                    >
+                      {isCompleted 
+                        ? (habit.type === 'build' ? 'Completed Today!' : 'Resisted Today!')
+                        : (habit.type === 'build' ? 'Mark Complete' : 'Mark Resisted')
+                      }
+                    </button>
+                    {isCompleted && (
+                      <button 
+                        className="undo-btn" 
+                        onClick={() => uncompleteHabit(habit.id)}
+                      >
+                        Undo
+                      </button>
+                    )}
+                  </div>
                 </div>
               )
             })}
@@ -365,22 +270,13 @@ export default function MyHabits() {
       </div>
 
       {selectedHabit && (
-        <>
-          <HabitPreferencesModal
-            isOpen={showPreferencesModal}
-            onClose={closePreferencesModal}
-            habitId={selectedHabit.id}
-            habitName={selectedHabit.name}
-            preferenceConfig={getHabitPreferenceConfig(selectedHabit.id)}
-          />
-          
-          <HabitAnalyticsModal
-            isOpen={showAnalyticsModal}
-            onClose={closeAnalyticsModal}
-            habitId={selectedHabit.id}
-            habitName={selectedHabit.name}
-          />
-        </>
+        <HabitPreferencesModal
+          isOpen={showPreferencesModal}
+          onClose={closePreferencesModal}
+          habitId={selectedHabit.id}
+          habitName={selectedHabit.name}
+          preferenceConfig={getHabitPreferenceConfig(selectedHabit.id)}
+        />
       )}
 
       <HabitStackBuilder
