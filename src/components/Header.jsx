@@ -40,7 +40,7 @@ export default function Header({ title, showBackButton = false, backTo = "/" }) 
             <div className="greeting">Welcome back, {displayName}!</div>
             <div className="stats">
               <div className="stat-item">
-                <span className="stat-number">🔥 {currentStreak}</span>
+                <span className="stat-number">{currentStreak}</span>
                 <span className="stat-label">Day Streak</span>
               </div>
               <div className="stat-item">

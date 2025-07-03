@@ -5,6 +5,7 @@ import { useHabits } from '../contexts/HabitContext'
 export default function Journal() {
   const { getReflections, addReflection, deleteReflection } = useHabits()
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showPastReflections, setShowPastReflections] = useState(false)
   const [reflectionText, setReflectionText] = useState('')
   const [showRatingStep, setShowRatingStep] = useState(false)
   const [selectedRating, setSelectedRating] = useState(null)
@@ -122,32 +123,43 @@ export default function Journal() {
             <p>Start journaling your thoughts and track your daily mood!</p>
           </div>
         ) : (
-          <div className="reflections-list">
-            {reflections.map((reflection) => (
-              <div key={reflection.id} className="reflection-card">
-                <div className="reflection-header">
-                  <div className="reflection-date">
-                    {formatDate(reflection.timestamp)}
+          <div className="reflections-section">
+            <button 
+              className="toggle-reflections-btn"
+              onClick={() => setShowPastReflections(!showPastReflections)}
+            >
+              {showPastReflections ? 'Hide Past Reflections' : 'Show Past Reflections'} ({reflections.length})
+            </button>
+            
+            {showPastReflections && (
+              <div className="reflections-list">
+                {reflections.map((reflection) => (
+                  <div key={reflection.id} className="reflection-card">
+                    <div className="reflection-header">
+                      <div className="reflection-date">
+                        {formatDate(reflection.timestamp)}
+                      </div>
+                      <div className="reflection-actions">
+                        {reflection.rating && (
+                          <span className="reflection-rating">
+                            {getRatingEmoji(reflection.rating)}
+                          </span>
+                        )}
+                        <button 
+                          className="delete-reflection-btn"
+                          onClick={() => handleDeleteReflection(reflection.id)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                    <div className="reflection-text">
+                      {reflection.text}
+                    </div>
                   </div>
-                  <div className="reflection-actions">
-                    {reflection.rating && (
-                      <span className="reflection-rating">
-                        {getRatingEmoji(reflection.rating)}
-                      </span>
-                    )}
-                    <button 
-                      className="delete-reflection-btn"
-                      onClick={() => handleDeleteReflection(reflection.id)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                </div>
-                <div className="reflection-text">
-                  {reflection.text}
-                </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         )}
 
