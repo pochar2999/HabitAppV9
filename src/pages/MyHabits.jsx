@@ -47,7 +47,7 @@ export default function MyHabits() {
         if (isHabitCompletedToday(habitId)) {
           uncompleteHabit(habitId)
         } else {
-          completeHabit(habitId)
+          // Show analytics modal but don't complete yet - let modal handle completion
           setSelectedHabit(habit)
           setShowAnalyticsModal(true)
         }
@@ -56,7 +56,7 @@ export default function MyHabits() {
       if (isHabitCompletedToday(habitId)) {
         uncompleteHabit(habitId)
       } else {
-        // Don't complete here - let the analytics modal handle it
+        // Show analytics modal but don't complete yet - let modal handle completion
         setSelectedHabit(habit)
         setShowAnalyticsModal(true)
       }

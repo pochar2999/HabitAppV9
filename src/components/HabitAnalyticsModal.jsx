@@ -21,11 +21,11 @@ export default function HabitAnalyticsModal({
     try {
       setSaving(true)
       
-      // Log analytics data
-      await logHabitAnalytics(habitId, analytics)
-      
-      // Ensure habit is marked as completed
+      // First complete the habit
       completeHabit(habitId)
+      
+      // Then log analytics data
+      logHabitAnalytics(habitId, analytics)
       
       onClose()
       
@@ -46,7 +46,7 @@ export default function HabitAnalyticsModal({
   }
 
   const handleSkip = () => {
-    // Just ensure habit is marked as completed without analytics
+    // Complete the habit without analytics
     completeHabit(habitId)
     onClose()
     
