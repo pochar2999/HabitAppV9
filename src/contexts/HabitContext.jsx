@@ -15,6 +15,7 @@ export function HabitProvider({ children }) {
   const [habitPreferences, setHabitPreferences] = useState({})
   const [habitStacks, setHabitStacks] = useState({})
   const [habitAnalytics, setHabitAnalytics] = useState({})
+  const [dailyStats, setDailyStats] = useState({})
   const [loading, setLoading] = useState(true)
 
   // Load user data when user changes
@@ -22,15 +23,20 @@ export function HabitProvider({ children }) {
     if (currentUser && currentUser.emailVerified) {
       loadUserData()
     } else {
-      setHabits({})
-      setHabitCompletion({})
-      setActivityLog({})
-      setHabitPreferences({})
-      setHabitStacks({})
-      setHabitAnalytics({})
-      setLoading(false)
+      resetAllData()
     }
   }, [currentUser])
+
+  function resetAllData() {
+    setHabits({})
+    setHabitCompletion({})
+    setActivityLog({})
+    setHabitPreferences({})
+    setHabitStacks({})
+    setHabitAnalytics({})
+    setDailyStats({})
+    setLoading(false)
+  }
 
   async function loadUserData() {
     try {
@@ -43,6 +49,7 @@ export function HabitProvider({ children }) {
         setHabitPreferences(userData.habitPreferences || {})
         setHabitStacks(userData.habitStacks || {})
         setHabitAnalytics(userData.habitAnalytics || {})
+        setDailyStats(userData.dailyStats || {})
       }
     } catch (error) {
       console.error('Error loading user data:', error)
@@ -62,6 +69,7 @@ export function HabitProvider({ children }) {
         habitPreferences,
         habitStacks,
         habitAnalytics,
+        dailyStats,
         lastUpdated: new Date()
       })
     } catch (error) {
@@ -78,12 +86,24 @@ export function HabitProvider({ children }) {
         createdAt: new Date().toISOString(),
         streak: 0,
         bestStreak: 0,
-        completionType: habitData.completionType || 'single', // 'single' or 'multi'
+        completionType: habitData.completionType || 'single',
         targetCount: habitData.targetCount || 1,
         currentProgress: 0
       }
     }
     setHabits(newHabits)
+    
+    // Save preferences if provided
+    if (habitData.preferences && Object.keys(habitData.preferences).length > 0) {
+      const newPreferences = {
+        ...habitPreferences,
+        [habitId]: {
+          ...habitData.preferences,
+          lastUpdated: new Date().toISOString()
+        }
+      }
+      setHabitPreferences(newPreferences)
+    }
     
     // Mark today as active since user added a habit
     markDayActive()
@@ -115,6 +135,9 @@ export function HabitProvider({ children }) {
     const newAnalytics = { ...habitAnalytics }
     delete newAnalytics[habitId]
     setHabitAnalytics(newAnalytics)
+
+    // Update daily stats
+    updateDailyStatsForDate(new Date().toISOString().split('T')[0])
   }
 
   function updateHabitProgress(habitId, increment = 1) {
@@ -134,12 +157,12 @@ export function HabitProvider({ children }) {
     newCompletion[today][habitId] = {
       progress: newProgress,
       completed: newProgress >= habit.targetCount,
-      completedAt: newProgress >= habit.targetCount ? new Date().toISOString() : null
+      completedAt: newProgress >= habit.targetCount ? new Date().toISOString() : (newCompletion[today][habitId]?.completedAt || null)
     }
 
     setHabitCompletion(newCompletion)
 
-    // Update habit streak if completed
+    // Update habit streak if completed for the first time today
     if (newProgress >= habit.targetCount && currentProgress < habit.targetCount) {
       const newHabits = { ...habits }
       newHabits[habitId].streak = (newHabits[habitId].streak || 0) + 1
@@ -151,6 +174,9 @@ export function HabitProvider({ children }) {
       setHabits(newHabits)
       markDayActive()
     }
+
+    // Update daily stats
+    updateDailyStatsForDate(today)
   }
 
   function completeHabit(habitId) {
@@ -191,6 +217,9 @@ export function HabitProvider({ children }) {
         delete newActivityLog[today]
         setActivityLog(newActivityLog)
       }
+
+      // Update daily stats
+      updateDailyStatsForDate(today)
     }
   }
 
@@ -199,6 +228,34 @@ export function HabitProvider({ children }) {
     const newActivityLog = { ...activityLog }
     newActivityLog[today] = true
     setActivityLog(newActivityLog)
+  }
+
+  function updateDailyStatsForDate(dateStr) {
+    // Get habits that existed on this specific date
+    const habitsOnDate = Object.values(habits).filter(habit => {
+      const habitCreatedDate = new Date(habit.createdAt).toISOString().split('T')[0]
+      return habitCreatedDate <= dateStr
+    })
+    
+    // Count completed habits on this date
+    const completedHabits = habitsOnDate.filter(habit => {
+      return habitCompletion[dateStr]?.[habit.id]?.completed
+    }).length
+    
+    const totalHabits = habitsOnDate.length
+    
+    const newDailyStats = { ...dailyStats }
+    if (totalHabits > 0) {
+      newDailyStats[dateStr] = {
+        habitsCompleted: completedHabits,
+        habitsTotal: totalHabits,
+        percentage: Math.round((completedHabits / totalHabits) * 100)
+      }
+    } else {
+      delete newDailyStats[dateStr]
+    }
+    
+    setDailyStats(newDailyStats)
   }
 
   function isHabitCompletedToday(habitId) {
@@ -251,19 +308,29 @@ export function HabitProvider({ children }) {
       date.setDate(date.getDate() - i)
       const dateStr = date.toISOString().split('T')[0]
       
-      // Get habits that existed on this specific date
-      const habitsOnDate = Object.values(habits).filter(habit => {
-        const habitCreatedDate = new Date(habit.createdAt).toISOString().split('T')[0]
-        return habitCreatedDate <= dateStr
-      })
+      // Use stored daily stats if available, otherwise calculate
+      let percentage = 0
+      let completedHabits = 0
+      let totalHabits = 0
       
-      // Count completed habits on this date
-      const completedHabits = habitsOnDate.filter(habit => {
-        return habitCompletion[dateStr]?.[habit.id]?.completed
-      }).length
-      
-      const totalHabits = habitsOnDate.length
-      const percentage = totalHabits > 0 ? (completedHabits / totalHabits) * 100 : 0
+      if (dailyStats[dateStr]) {
+        percentage = dailyStats[dateStr].percentage
+        completedHabits = dailyStats[dateStr].habitsCompleted
+        totalHabits = dailyStats[dateStr].habitsTotal
+      } else {
+        // Calculate for this date
+        const habitsOnDate = Object.values(habits).filter(habit => {
+          const habitCreatedDate = new Date(habit.createdAt).toISOString().split('T')[0]
+          return habitCreatedDate <= dateStr
+        })
+        
+        completedHabits = habitsOnDate.filter(habit => {
+          return habitCompletion[dateStr]?.[habit.id]?.completed
+        }).length
+        
+        totalHabits = habitsOnDate.length
+        percentage = totalHabits > 0 ? Math.round((completedHabits / totalHabits) * 100) : 0
+      }
       
       weekData.push({
         date: dateStr,
@@ -290,6 +357,24 @@ export function HabitProvider({ children }) {
       }
     }
     setHabitPreferences(newPreferences)
+
+    // Update habit target count if it changed
+    const habit = habits[habitId]
+    if (habit) {
+      const { getHabitTargetCount } = require('../data/habitPreferences')
+      const newTargetCount = getHabitTargetCount(habitId, preferences)
+      
+      if (newTargetCount !== habit.targetCount) {
+        const newHabits = {
+          ...habits,
+          [habitId]: {
+            ...habit,
+            targetCount: newTargetCount
+          }
+        }
+        setHabits(newHabits)
+      }
+    }
   }
 
   // Habit Stack functions
@@ -383,12 +468,24 @@ export function HabitProvider({ children }) {
     }
   }
 
-  // Auto-save when data changes
+  // Auto-save when data changes with debouncing
   useEffect(() => {
     if (!loading && currentUser) {
-      saveUserData()
+      const timeoutId = setTimeout(() => {
+        saveUserData()
+      }, 500) // Debounce saves by 500ms
+
+      return () => clearTimeout(timeoutId)
     }
-  }, [habits, habitCompletion, activityLog, habitPreferences, habitStacks, habitAnalytics])
+  }, [habits, habitCompletion, activityLog, habitPreferences, habitStacks, habitAnalytics, dailyStats])
+
+  // Update daily stats when habits or completion data changes
+  useEffect(() => {
+    if (!loading && currentUser) {
+      const today = new Date().toISOString().split('T')[0]
+      updateDailyStatsForDate(today)
+    }
+  }, [habits, habitCompletion])
 
   const value = {
     habits,
@@ -397,6 +494,7 @@ export function HabitProvider({ children }) {
     habitPreferences,
     habitStacks,
     habitAnalytics,
+    dailyStats,
     loading,
     addHabit,
     removeHabit,

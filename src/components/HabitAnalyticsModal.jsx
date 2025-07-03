@@ -7,7 +7,7 @@ export default function HabitAnalyticsModal({
   habitId, 
   habitName 
 }) {
-  const { logHabitAnalytics } = useHabits()
+  const { logHabitAnalytics, completeHabit } = useHabits()
   const [analytics, setAnalytics] = useState({
     moodBefore: 3,
     moodAfter: 3,
@@ -20,8 +20,15 @@ export default function HabitAnalyticsModal({
   const handleSave = async () => {
     try {
       setSaving(true)
+      
+      // Log analytics data
       await logHabitAnalytics(habitId, analytics)
+      
+      // Ensure habit is marked as completed
+      completeHabit(habitId)
+      
       onClose()
+      
       // Reset form
       setAnalytics({
         moodBefore: 3,
@@ -36,6 +43,21 @@ export default function HabitAnalyticsModal({
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleSkip = () => {
+    // Just ensure habit is marked as completed without analytics
+    completeHabit(habitId)
+    onClose()
+    
+    // Reset form
+    setAnalytics({
+      moodBefore: 3,
+      moodAfter: 3,
+      effort: 3,
+      trigger: '',
+      notes: ''
+    })
   }
 
   const moodLabels = {
@@ -153,7 +175,7 @@ export default function HabitAnalyticsModal({
         </div>
         
         <div className="modal-footer">
-          <button className="btn-secondary" onClick={onClose}>
+          <button className="btn-secondary" onClick={handleSkip}>
             Skip
           </button>
           <button 

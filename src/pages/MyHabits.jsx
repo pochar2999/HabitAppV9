@@ -39,16 +39,15 @@ export default function MyHabits() {
     if (habit.completionType === 'multi') {
       const progress = getHabitProgressToday(habitId)
       if (progress.completed) {
-        // If already completed, undo the last progress
+        // If already completed, undo the completion
         uncompleteHabit(habitId)
       } else {
-        // Add one more progress
-        updateHabitProgress(habitId, 1)
-        
-        // Check if this completion finished the habit for today
-        const newProgress = getHabitProgressToday(habitId)
-        if (newProgress.completed) {
-          // Show analytics modal after completion
+        // For multi-completion habits, don't show analytics on individual taps
+        // Only show when the full habit is completed via progress buttons
+        if (isHabitCompletedToday(habitId)) {
+          uncompleteHabit(habitId)
+        } else {
+          completeHabit(habitId)
           setSelectedHabit(habit)
           setShowAnalyticsModal(true)
         }
@@ -57,23 +56,27 @@ export default function MyHabits() {
       if (isHabitCompletedToday(habitId)) {
         uncompleteHabit(habitId)
       } else {
-        completeHabit(habitId)
-        // Show analytics modal after completion
+        // Don't complete here - let the analytics modal handle it
         setSelectedHabit(habit)
         setShowAnalyticsModal(true)
       }
     }
   }
 
-  const handleProgressTap = (habitId) => {
-    updateHabitProgress(habitId, 1)
+  const handleProgressTap = (habitId, targetProgress) => {
+    const currentProgress = getHabitProgressToday(habitId)
     
-    // Check if this tap completed the habit
-    const progress = getHabitProgressToday(habitId)
-    if (progress.completed && progress.current === progress.target) {
-      const habit = habits[habitId]
-      setSelectedHabit(habit)
-      setShowAnalyticsModal(true)
+    // Set progress to the tapped button number
+    const progressDiff = targetProgress - currentProgress.current
+    if (progressDiff > 0) {
+      updateHabitProgress(habitId, progressDiff)
+      
+      // Check if this tap completed the habit
+      if (targetProgress >= currentProgress.target) {
+        const habit = habits[habitId]
+        setSelectedHabit(habit)
+        setShowAnalyticsModal(true)
+      }
     }
   }
 
@@ -163,7 +166,7 @@ export default function MyHabits() {
               <button
                 key={index}
                 className={`progress-btn ${index < progress.current ? 'completed' : ''}`}
-                onClick={() => index < progress.current ? null : handleProgressTap(habit.id)}
+                onClick={() => index >= progress.current ? handleProgressTap(habit.id, index + 1) : null}
                 disabled={index < progress.current}
               >
                 {index + 1}
@@ -196,7 +199,7 @@ export default function MyHabits() {
           {isCompleted && (
             <button 
               className="undo-btn" 
-              onClick={() => handleCompleteHabit(habit.id)}
+              onClick={() => uncompleteHabit(habit.id)}
             >
               Undo
             </button>
