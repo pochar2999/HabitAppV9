@@ -1,0 +1,133 @@
+/* Button styles */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 12px 24px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #f7fafc;
+  border-color: var(--primary-color);
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: var(--spacing-sm) 0;
+  transition: color 0.2s ease;
+}
+
+.back-btn:hover {
+  color: var(--primary-hover);
+}
+
+.start-btn {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  margin-top: var(--spacing-lg);
+}
+
+.start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.action-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.action-btn.complete {
+  background: linear-gradient(135deg, var(--success-color), #38a169);
+  color: white;
+}
+
+.action-btn.complete.completed {
+  background: #68d391;
+  opacity: 0.8;
+}
+
+.action-btn.resist {
+  background: linear-gradient(135deg, var(--warning-color), #dd6b20);
+  color: white;
+}
+
+.action-btn.resist.resisted {
+  background: #f6ad55;
+  opacity: 0.8;
+}
+
+.undo-btn {
+  background: #e2e8f0;
+  color: var(--text-secondary);
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: var(--spacing-sm);
+}
+
+.remove-habit-btn {
+  background: none;
+  border: 1px solid #fed7d7;
+  color: var(--error-color);
+  padding: 8px 16px;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-habit-btn:hover {
+  background: #fed7d7;
+  color: #742a2a;
+}

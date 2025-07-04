@@ -1,0 +1,155 @@
+/* Features app styles */
+.features-content {
+  flex: 1;
+  padding: var(--spacing-md);
+  padding-bottom: 100px;
+}
+
+.features-intro {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.features-intro h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.features-intro p {
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.features-footer {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+/* Individual feature app styles */
+.journaling-app-content,
+.calendar-app-content,
+.todo-app-content,
+.meal-tracker-content,
+.life-stats-content,
+.future-letters-content,
+.gratitude-content,
+.reflection-content,
+.bucket-list-content {
+  flex: 1;
+  padding: var(--spacing-md);
+  padding-bottom: 100px;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.add-entry-btn,
+.add-event-btn,
+.add-todo-btn,
+.add-meal-btn,
+.add-gratitude-btn,
+.add-goal-btn {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.add-entry-btn:hover,
+.add-event-btn:hover,
+.add-todo-btn:hover,
+.add-meal-btn:hover,
+.add-gratitude-btn:hover,
+.add-goal-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.no-entries,
+.no-events,
+.no-todos,
+.no-meals,
+.no-gratitude,
+.no-goals,
+.no-reflections {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--text-secondary);
+}
+
+.no-entries-icon,
+.no-events-icon,
+.no-todos-icon,
+.no-meals-icon,
+.no-gratitude-icon,
+.no-goals-icon,
+.no-reflections-icon {
+  font-size: 64px;
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.no-entries h3,
+.no-events h3,
+.no-todos h3,
+.no-meals h3,
+.no-gratitude h3,
+.no-goals h3,
+.no-reflections h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.no-entries p,
+.no-events p,
+.no-todos p,
+.no-meals p,
+.no-gratitude p,
+.no-goals p,
+.no-reflections p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.start-gratitude-btn,
+.start-goals-btn,
+.start-reflection-btn {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: var(--spacing-md);
+  transition: all 0.2s ease;
+}
+
+.start-gratitude-btn:hover,
+.start-goals-btn:hover,
+.start-reflection-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
