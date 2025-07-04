@@ -23,6 +23,12 @@ import Features from './pages/Features'
 import JournalingApp from './pages/features/JournalingApp'
 import CalendarApp from './pages/features/CalendarApp'
 import TodoApp from './pages/features/TodoApp'
+import MealTrackerApp from './pages/features/MealTrackerApp'
+import LifeStatsApp from './pages/features/LifeStatsApp'
+import FutureLettersApp from './pages/features/FutureLettersApp'
+import GratitudeApp from './pages/features/GratitudeApp'
+import ReflectionApp from './pages/features/ReflectionApp'
+import BucketListApp from './pages/features/BucketListApp'
 
 function App() {
   return (
@@ -84,6 +90,36 @@ function App() {
                 <Route path="/features/todo" element={
                   <ProtectedRoute>
                     <TodoApp />
+                  </ProtectedRoute>
+                } />
+                <Route path="/features/meal-tracker" element={
+                  <ProtectedRoute>
+                    <MealTrackerApp />
+                  </ProtectedRoute>
+                } />
+                <Route path="/features/life-stats" element={
+                  <ProtectedRoute>
+                    <LifeStatsApp />
+                  </ProtectedRoute>
+                } />
+                <Route path="/features/future-letters" element={
+                  <ProtectedRoute>
+                    <FutureLettersApp />
+                  </ProtectedRoute>
+                } />
+                <Route path="/features/gratitude" element={
+                  <ProtectedRoute>
+                    <GratitudeApp />
+                  </ProtectedRoute>
+                } />
+                <Route path="/features/reflection" element={
+                  <ProtectedRoute>
+                    <ReflectionApp />
+                  </ProtectedRoute>
+                } />
+                <Route path="/features/bucket-list" element={
+                  <ProtectedRoute>
+                    <BucketListApp />
                   </ProtectedRoute>
                 } />
                 <Route path="/my-community" element={

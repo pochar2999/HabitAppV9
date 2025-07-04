@@ -12,6 +12,13 @@ export function FeaturesProvider({ children }) {
   const [journalEntries, setJournalEntries] = useState([])
   const [calendarEvents, setCalendarEvents] = useState([])
   const [todoItems, setTodoItems] = useState([])
+  const [mealLogs, setMealLogs] = useState({})
+  const [waterIntake, setWaterIntake] = useState({})
+  const [mealTrackerSettings, setMealTrackerSettings] = useState({ waterGoal: 8 })
+  const [futureLetters, setFutureLetters] = useState([])
+  const [gratitudeEntries, setGratitudeEntries] = useState([])
+  const [dayReflections, setDayReflections] = useState([])
+  const [bucketListItems, setBucketListItems] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Load user data when user changes
@@ -27,6 +34,13 @@ export function FeaturesProvider({ children }) {
     setJournalEntries([])
     setCalendarEvents([])
     setTodoItems([])
+    setMealLogs({})
+    setWaterIntake({})
+    setMealTrackerSettings({ waterGoal: 8 })
+    setFutureLetters([])
+    setGratitudeEntries([])
+    setDayReflections([])
+    setBucketListItems([])
     setLoading(false)
   }
 
@@ -38,6 +52,13 @@ export function FeaturesProvider({ children }) {
         setJournalEntries(userData.journalEntries || [])
         setCalendarEvents(userData.calendarEvents || [])
         setTodoItems(userData.todoItems || [])
+        setMealLogs(userData.mealLogs || {})
+        setWaterIntake(userData.waterIntake || {})
+        setMealTrackerSettings(userData.mealTrackerSettings || { waterGoal: 8 })
+        setFutureLetters(userData.futureLetters || [])
+        setGratitudeEntries(userData.gratitudeEntries || [])
+        setDayReflections(userData.dayReflections || [])
+        setBucketListItems(userData.bucketListItems || [])
       }
     } catch (error) {
       console.error('Error loading features data:', error)
@@ -54,6 +75,13 @@ export function FeaturesProvider({ children }) {
         journalEntries,
         calendarEvents,
         todoItems,
+        mealLogs,
+        waterIntake,
+        mealTrackerSettings,
+        futureLetters,
+        gratitudeEntries,
+        dayReflections,
+        bucketListItems,
         lastUpdated: new Date()
       })
     } catch (error) {
@@ -184,6 +212,254 @@ export function FeaturesProvider({ children }) {
       .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
   }
 
+  // Meal Tracker functions
+  function getMealLogs(date) {
+    return mealLogs[date] || []
+  }
+
+  function addMealLog(date, mealData) {
+    const meal = {
+      id: Date.now().toString(),
+      ...mealData
+    }
+    
+    setMealLogs(prev => ({
+      ...prev,
+      [date]: [...(prev[date] || []), meal]
+    }))
+    
+    return meal.id
+  }
+
+  function getWaterIntake(date) {
+    return waterIntake[date] || 0
+  }
+
+  function updateWaterIntake(date, amount) {
+    setWaterIntake(prev => ({
+      ...prev,
+      [date]: Math.max(0, amount)
+    }))
+  }
+
+  function getMealTrackerSettings() {
+    return mealTrackerSettings
+  }
+
+  function updateMealTrackerSettings(settings) {
+    setMealTrackerSettings(prev => ({ ...prev, ...settings }))
+  }
+
+  function getMealStreak() {
+    const dates = Object.keys(mealLogs).sort().reverse()
+    let streak = 0
+    const today = new Date().toISOString().split('T')[0]
+    
+    let currentDate = new Date()
+    
+    while (true) {
+      const dateStr = currentDate.toISOString().split('T')[0]
+      const meals = mealLogs[dateStr] || []
+      
+      if (meals.length >= 3) { // At least 3 meals per day
+        streak++
+        currentDate.setDate(currentDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+    
+    return streak
+  }
+
+  function getWaterStreak() {
+    const dates = Object.keys(waterIntake).sort().reverse()
+    let streak = 0
+    const today = new Date().toISOString().split('T')[0]
+    const waterGoal = mealTrackerSettings.waterGoal || 8
+    
+    let currentDate = new Date()
+    
+    while (true) {
+      const dateStr = currentDate.toISOString().split('T')[0]
+      const water = waterIntake[dateStr] || 0
+      
+      if (water >= waterGoal) {
+        streak++
+        currentDate.setDate(currentDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+    
+    return streak
+  }
+
+  // Future Letters functions
+  function getFutureLetters() {
+    const now = new Date()
+    return futureLetters.filter(letter => {
+      const deliveryDate = new Date(letter.deliveryDate)
+      return deliveryDate > now && !letter.delivered
+    }).sort((a, b) => new Date(a.deliveryDate) - new Date(b.deliveryDate))
+  }
+
+  function getDeliveredLetters() {
+    const now = new Date()
+    return futureLetters.filter(letter => {
+      const deliveryDate = new Date(letter.deliveryDate)
+      return deliveryDate <= now || letter.delivered
+    }).sort((a, b) => new Date(b.deliveryDate) - new Date(a.deliveryDate))
+  }
+
+  function addFutureLetter(letterData) {
+    const letter = {
+      id: Date.now().toString(),
+      ...letterData,
+      delivered: false,
+      isRead: false
+    }
+    
+    setFutureLetters(prev => [...prev, letter])
+    return letter.id
+  }
+
+  function markLetterAsRead(letterId) {
+    setFutureLetters(prev => prev.map(letter =>
+      letter.id === letterId ? { ...letter, isRead: true } : letter
+    ))
+  }
+
+  // Gratitude functions
+  function getGratitudeEntries() {
+    return gratitudeEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  }
+
+  function addGratitudeEntry(text) {
+    const entry = {
+      id: Date.now().toString(),
+      text: text.trim(),
+      timestamp: new Date().toISOString(),
+      date: new Date().toDateString()
+    }
+    
+    setGratitudeEntries(prev => [entry, ...prev])
+    return entry.id
+  }
+
+  function deleteGratitudeEntry(entryId) {
+    setGratitudeEntries(prev => prev.filter(entry => entry.id !== entryId))
+  }
+
+  function getGratitudeStreak() {
+    const dates = {}
+    gratitudeEntries.forEach(entry => {
+      const date = new Date(entry.timestamp).toDateString()
+      dates[date] = true
+    })
+    
+    let streak = 0
+    let currentDate = new Date()
+    
+    while (true) {
+      const dateStr = currentDate.toDateString()
+      if (dates[dateStr]) {
+        streak++
+        currentDate.setDate(currentDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+    
+    return streak
+  }
+
+  // Day Reflection functions
+  function getDayReflections() {
+    return dayReflections.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  }
+
+  function addDayReflection(reflectionData) {
+    const reflection = {
+      id: Date.now().toString(),
+      ...reflectionData,
+      timestamp: new Date().toISOString(),
+      date: new Date().toDateString()
+    }
+    
+    setDayReflections(prev => [reflection, ...prev])
+    return reflection.id
+  }
+
+  function deleteDayReflection(reflectionId) {
+    setDayReflections(prev => prev.filter(reflection => reflection.id !== reflectionId))
+  }
+
+  function getDayReflectionStreak() {
+    const dates = {}
+    dayReflections.forEach(reflection => {
+      const date = new Date(reflection.timestamp).toDateString()
+      dates[date] = true
+    })
+    
+    let streak = 0
+    let currentDate = new Date()
+    
+    while (true) {
+      const dateStr = currentDate.toDateString()
+      if (dates[dateStr]) {
+        streak++
+        currentDate.setDate(currentDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+    
+    return streak
+  }
+
+  // Bucket List functions
+  function getBucketListItems() {
+    return bucketListItems.sort((a, b) => {
+      // Sort completed items to bottom
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1
+      }
+      return new Date(b.createdAt) - new Date(a.createdAt)
+    })
+  }
+
+  function addBucketListItem(itemData) {
+    const item = {
+      id: Date.now().toString(),
+      ...itemData,
+      completed: false,
+      completedAt: null,
+      createdAt: new Date().toISOString()
+    }
+    
+    setBucketListItems(prev => [...prev, item])
+    return item.id
+  }
+
+  function updateBucketListItem(itemId, updates) {
+    setBucketListItems(prev => prev.map(item =>
+      item.id === itemId ? { ...item, ...updates } : item
+    ))
+  }
+
+  function completeBucketListItem(itemId) {
+    setBucketListItems(prev => prev.map(item =>
+      item.id === itemId 
+        ? { ...item, completed: true, completedAt: new Date().toISOString() }
+        : item
+    ))
+  }
+
+  function deleteBucketListItem(itemId) {
+    setBucketListItems(prev => prev.filter(item => item.id !== itemId))
+  }
+
   // Auto-save when data changes with debouncing
   useEffect(() => {
     if (!loading && currentUser) {
@@ -193,7 +469,11 @@ export function FeaturesProvider({ children }) {
 
       return () => clearTimeout(timeoutId)
     }
-  }, [journalEntries, calendarEvents, todoItems])
+  }, [
+    journalEntries, calendarEvents, todoItems, mealLogs, waterIntake, 
+    mealTrackerSettings, futureLetters, gratitudeEntries, dayReflections, 
+    bucketListItems
+  ])
 
   const value = {
     // Journal
@@ -216,6 +496,41 @@ export function FeaturesProvider({ children }) {
     deleteTodoItem,
     getActiveTodoItems,
     getCompletedTodoItems,
+    
+    // Meal Tracker
+    getMealLogs,
+    addMealLog,
+    getWaterIntake,
+    updateWaterIntake,
+    getMealTrackerSettings,
+    updateMealTrackerSettings,
+    getMealStreak,
+    getWaterStreak,
+    
+    // Future Letters
+    getFutureLetters,
+    getDeliveredLetters,
+    addFutureLetter,
+    markLetterAsRead,
+    
+    // Gratitude
+    getGratitudeEntries,
+    addGratitudeEntry,
+    deleteGratitudeEntry,
+    getGratitudeStreak,
+    
+    // Day Reflections
+    getDayReflections,
+    addDayReflection,
+    deleteDayReflection,
+    getDayReflectionStreak,
+    
+    // Bucket List
+    getBucketListItems,
+    addBucketListItem,
+    updateBucketListItem,
+    completeBucketListItem,
+    deleteBucketListItem,
     
     // General
     loading

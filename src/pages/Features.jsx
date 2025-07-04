@@ -29,6 +29,54 @@ export default function Features() {
       description: 'Manage tasks and stay organized',
       color: 'linear-gradient(135deg, #4facfe, #00f2fe)',
       path: '/features/todo'
+    },
+    {
+      id: 'meal-tracker',
+      name: 'Meal & Water Tracker',
+      icon: '🍱',
+      description: 'Track your daily nutrition and hydration',
+      color: 'linear-gradient(135deg, #43e97b, #38f9d7)',
+      path: '/features/meal-tracker'
+    },
+    {
+      id: 'life-stats',
+      name: 'Life Stats Dashboard',
+      icon: '📊',
+      description: 'View your personal growth analytics',
+      color: 'linear-gradient(135deg, #fa709a, #fee140)',
+      path: '/features/life-stats'
+    },
+    {
+      id: 'future-letters',
+      name: 'Letter to Future Self',
+      icon: '✉️',
+      description: 'Send messages to your future self',
+      color: 'linear-gradient(135deg, #a8edea, #fed6e3)',
+      path: '/features/future-letters'
+    },
+    {
+      id: 'gratitude',
+      name: 'Gratitude Wall',
+      icon: '🙏',
+      description: 'Daily gratitude practice and memories',
+      color: 'linear-gradient(135deg, #ffecd2, #fcb69f)',
+      path: '/features/gratitude'
+    },
+    {
+      id: 'reflection',
+      name: 'Unpack My Day',
+      icon: '🧠',
+      description: 'End-of-day reflection and mindfulness',
+      color: 'linear-gradient(135deg, #a18cd1, #fbc2eb)',
+      path: '/features/reflection'
+    },
+    {
+      id: 'bucket-list',
+      name: 'Bucket List Tracker',
+      icon: '🪂',
+      description: 'Track your dreams and life goals',
+      color: 'linear-gradient(135deg, #fad0c4, #ffd1ff)',
+      path: '/features/bucket-list'
     }
   ]
 
