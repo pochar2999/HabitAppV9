@@ -226,6 +226,7 @@
   border-radius: var(--border-radius-sm);
   padding: var(--spacing-md);
   border-left: 4px solid var(--primary-color);
+  position: relative;
 }
 
 .meal-info {
@@ -255,6 +256,42 @@
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;
+}
+
+.meal-actions {
+  position: absolute;
+  top: var(--spacing-xs);
+  right: var(--spacing-xs);
+  display: flex;
+  gap: var(--spacing-xs);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.meal-item:hover .meal-actions {
+  opacity: 1;
+}
+
+.edit-meal-btn,
+.delete-meal-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.edit-meal-btn:hover {
+  background: #e6fffa;
+  color: var(--primary-color);
+}
+
+.delete-meal-btn:hover {
+  background: #fed7d7;
+  color: var(--error-color);
 }
 
 .meal-tracker-history {

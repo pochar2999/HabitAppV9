@@ -11,6 +11,8 @@ export default function GratitudeApp() {
   } = useFeatures()
 
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteEntryId, setDeleteEntryId] = useState(null)
   const [viewMode, setViewMode] = useState('wall') // 'wall' or 'list'
   const [gratitudeText, setGratitudeText] = useState('')
   const [saving, setSaving] = useState(false)
@@ -50,9 +52,21 @@ export default function GratitudeApp() {
   }
 
   const handleDeleteEntry = (entryId) => {
-    if (window.confirm('Are you sure you want to delete this gratitude entry?')) {
-      deleteGratitudeEntry(entryId)
+    setDeleteEntryId(entryId)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = () => {
+    if (deleteEntryId) {
+      deleteGratitudeEntry(deleteEntryId)
+      setShowDeleteModal(false)
+      setDeleteEntryId(null)
     }
+  }
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false)
+    setDeleteEntryId(null)
   }
 
   const formatDate = (timestamp) => {
@@ -233,6 +247,27 @@ export default function GratitudeApp() {
                   disabled={saving || !gratitudeText.trim()}
                 >
                   {saving ? 'Saving...' : '💝 Save Gratitude'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="delete-confirmation-modal">
+            <div className="delete-confirmation-content">
+              <div className="delete-confirmation-icon">🗑️</div>
+              <h3 className="delete-confirmation-title">Delete Gratitude</h3>
+              <p className="delete-confirmation-message">
+                Are you sure you want to delete this gratitude entry? This action cannot be undone.
+              </p>
+              <div className="delete-confirmation-actions">
+                <button className="delete-confirmation-cancel" onClick={cancelDelete}>
+                  Cancel
+                </button>
+                <button className="delete-confirmation-confirm" onClick={confirmDelete}>
+                  Delete
                 </button>
               </div>
             </div>

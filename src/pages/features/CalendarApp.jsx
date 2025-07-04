@@ -8,6 +8,7 @@ export default function CalendarApp() {
   const [view, setView] = useState('month') // 'day', 'week', 'month'
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedDate, setSelectedDate] = useState(null)
+  const [editingEvent, setEditingEvent] = useState(null)
   const [eventForm, setEventForm] = useState({
     title: '',
     date: '',
@@ -27,6 +28,7 @@ export default function CalendarApp() {
 
   const handleAddEvent = (date = null) => {
     setSelectedDate(date)
+    setEditingEvent(null)
     setEventForm({
       title: '',
       date: date || new Date().toISOString().split('T')[0],
@@ -36,10 +38,27 @@ export default function CalendarApp() {
     setShowAddModal(true)
   }
 
+  const handleEditEvent = (event) => {
+    setEditingEvent(event)
+    setEventForm({
+      title: event.title,
+      date: event.date,
+      category: event.category,
+      description: event.description || ''
+    })
+    setShowAddModal(true)
+  }
+
   const handleSaveEvent = () => {
     if (!eventForm.title.trim() || !eventForm.date) {
       alert('Please enter title and date')
       return
+    }
+
+    if (editingEvent) {
+      // For editing, we would need to implement updateCalendarEvent in the context
+      // For now, we'll delete the old one and add a new one
+      deleteCalendarEvent(editingEvent.id)
     }
 
     addCalendarEvent(
@@ -51,6 +70,7 @@ export default function CalendarApp() {
 
     setShowAddModal(false)
     setEventForm({ title: '', date: '', category: 'general', description: '' })
+    setEditingEvent(null)
   }
 
   const handleDeleteEvent = (eventId) => {
@@ -148,6 +168,10 @@ export default function CalendarApp() {
                           className="day-event"
                           style={{ backgroundColor: categories[event.category]?.color }}
                           title={event.title}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEditEvent(event)
+                          }}
                         >
                           {categories[event.category]?.emoji} {event.title}
                         </div>
@@ -196,12 +220,21 @@ export default function CalendarApp() {
                   <div className="event-category" style={{ color: categories[event.category]?.color }}>
                     {categories[event.category]?.emoji} {categories[event.category]?.label}
                   </div>
-                  <button 
-                    className="delete-event-btn"
-                    onClick={() => handleDeleteEvent(event.id)}
-                  >
-                    ×
-                  </button>
+                  <div>
+                    <button 
+                      className="edit-event-btn"
+                      onClick={() => handleEditEvent(event)}
+                      style={{ marginRight: '8px', background: 'none', border: 'none', color: '#667eea', cursor: 'pointer' }}
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      className="delete-event-btn"
+                      onClick={() => handleDeleteEvent(event.id)}
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
                 <div className="event-title">{event.title}</div>
                 {event.description && (
@@ -241,12 +274,12 @@ export default function CalendarApp() {
 
         {view === 'month' ? renderMonthView() : renderDayView()}
 
-        {/* Add Event Modal */}
+        {/* Add/Edit Event Modal */}
         {showAddModal && (
           <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h3>Add Event</h3>
+                <h3>{editingEvent ? 'Edit Event' : 'Add Event'}</h3>
                 <button className="modal-close" onClick={() => setShowAddModal(false)}>×</button>
               </div>
               
@@ -312,7 +345,7 @@ export default function CalendarApp() {
                   onClick={handleSaveEvent}
                   disabled={!eventForm.title.trim() || !eventForm.date}
                 >
-                  Add Event
+                  {editingEvent ? 'Update Event' : 'Add Event'}
                 </button>
               </div>
             </div>

@@ -45,6 +45,17 @@ export default function TodoApp() {
     completeTodoItem(todoId)
   }
 
+  const handleUndoTodo = (todoId) => {
+    // Find the completed todo and recreate it as active
+    const completedTodo = completedTodos.find(todo => todo.id === todoId)
+    if (completedTodo) {
+      // Delete the completed todo
+      deleteTodoItem(todoId)
+      // Add it back as active
+      addTodoItem(completedTodo.title, completedTodo.dueDate)
+    }
+  }
+
   const handleDeleteTodo = (todoId) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       deleteTodoItem(todoId)
@@ -160,6 +171,15 @@ export default function TodoApp() {
                             {formatCompletedDate(todo.completedAt)}
                           </div>
                         </div>
+                      </div>
+                      <div className="todo-actions">
+                        <button 
+                          className="undo-todo-btn"
+                          onClick={() => handleUndoTodo(todo.id)}
+                          title="Undo completion"
+                        >
+                          Undo
+                        </button>
                       </div>
                     </div>
                   ))}

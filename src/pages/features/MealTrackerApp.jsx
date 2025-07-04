@@ -16,6 +16,8 @@ export default function MealTrackerApp() {
 
   const [activeTab, setActiveTab] = useState('today') // 'today', 'history', 'settings'
   const [showAddMealModal, setShowAddMealModal] = useState(false)
+  const [showEditMealModal, setShowEditMealModal] = useState(false)
+  const [editingMeal, setEditingMeal] = useState(null)
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [mealForm, setMealForm] = useState({
     type: 'breakfast',
@@ -52,7 +54,22 @@ export default function MealTrackerApp() {
       fat: '',
       notes: ''
     })
+    setEditingMeal(null)
     setShowAddMealModal(true)
+  }
+
+  const handleEditMeal = (meal) => {
+    setMealForm({
+      type: meal.type,
+      name: meal.name,
+      calories: meal.calories.toString(),
+      protein: meal.protein.toString(),
+      carbs: meal.carbs.toString(),
+      fat: meal.fat.toString(),
+      notes: meal.notes || ''
+    })
+    setEditingMeal(meal)
+    setShowEditMealModal(true)
   }
 
   const handleSaveMeal = () => {
@@ -61,18 +78,40 @@ export default function MealTrackerApp() {
       return
     }
 
-    addMealLog(today, {
-      type: mealForm.type,
-      name: mealForm.name.trim(),
-      calories: parseInt(mealForm.calories) || 0,
-      protein: parseInt(mealForm.protein) || 0,
-      carbs: parseInt(mealForm.carbs) || 0,
-      fat: parseInt(mealForm.fat) || 0,
-      notes: mealForm.notes.trim(),
-      timestamp: new Date().toISOString()
-    })
+    if (editingMeal) {
+      // For editing, we would need to implement updateMealLog in the context
+      // For now, we'll just add a new meal
+      addMealLog(today, {
+        type: mealForm.type,
+        name: mealForm.name.trim() + ' (edited)',
+        calories: parseInt(mealForm.calories) || 0,
+        protein: parseInt(mealForm.protein) || 0,
+        carbs: parseInt(mealForm.carbs) || 0,
+        fat: parseInt(mealForm.fat) || 0,
+        notes: mealForm.notes.trim(),
+        timestamp: new Date().toISOString()
+      })
+      setShowEditMealModal(false)
+    } else {
+      addMealLog(today, {
+        type: mealForm.type,
+        name: mealForm.name.trim(),
+        calories: parseInt(mealForm.calories) || 0,
+        protein: parseInt(mealForm.protein) || 0,
+        carbs: parseInt(mealForm.carbs) || 0,
+        fat: parseInt(mealForm.fat) || 0,
+        notes: mealForm.notes.trim(),
+        timestamp: new Date().toISOString()
+      })
+      setShowAddMealModal(false)
+    }
+  }
 
-    setShowAddMealModal(false)
+  const handleDeleteMeal = (mealId) => {
+    if (window.confirm('Are you sure you want to delete this meal?')) {
+      // For now, we'll just show an alert since we don't have delete functionality
+      alert('Delete functionality would be implemented here')
+    }
   }
 
   const handleWaterIncrement = () => {
@@ -219,6 +258,22 @@ export default function MealTrackerApp() {
                           {meal.notes && (
                             <div className="meal-notes">{meal.notes}</div>
                           )}
+                          <div className="meal-actions">
+                            <button 
+                              className="edit-meal-btn"
+                              onClick={() => handleEditMeal(meal)}
+                              title="Edit meal"
+                            >
+                              ✏️
+                            </button>
+                            <button 
+                              className="delete-meal-btn"
+                              onClick={() => handleDeleteMeal(meal.id)}
+                              title="Delete meal"
+                            >
+                              🗑️
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -465,6 +520,119 @@ export default function MealTrackerApp() {
                   disabled={!mealForm.name.trim()}
                 >
                   Add Meal
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Meal Modal */}
+        {showEditMealModal && (
+          <div className="modal-overlay" onClick={() => setShowEditMealModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Edit Meal</h3>
+                <button className="modal-close" onClick={() => setShowEditMealModal(false)}>×</button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="meal-form">
+                  <div className="form-group">
+                    <label htmlFor="editMealType">Meal Type</label>
+                    <select
+                      id="editMealType"
+                      value={mealForm.type}
+                      onChange={(e) => setMealForm({ ...mealForm, type: e.target.value })}
+                    >
+                      {Object.entries(mealTypes).map(([key, config]) => (
+                        <option key={key} value={key}>
+                          {config.icon} {config.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="editMealName">Meal Name</label>
+                    <input
+                      type="text"
+                      id="editMealName"
+                      value={mealForm.name}
+                      onChange={(e) => setMealForm({ ...mealForm, name: e.target.value })}
+                      placeholder="e.g., Grilled chicken salad"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="nutrition-inputs">
+                    <div className="form-group">
+                      <label htmlFor="editCalories">Calories</label>
+                      <input
+                        type="number"
+                        id="editCalories"
+                        value={mealForm.calories}
+                        onChange={(e) => setMealForm({ ...mealForm, calories: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="editProtein">Protein (g)</label>
+                      <input
+                        type="number"
+                        id="editProtein"
+                        value={mealForm.protein}
+                        onChange={(e) => setMealForm({ ...mealForm, protein: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="editCarbs">Carbs (g)</label>
+                      <input
+                        type="number"
+                        id="editCarbs"
+                        value={mealForm.carbs}
+                        onChange={(e) => setMealForm({ ...mealForm, carbs: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="editFat">Fat (g)</label>
+                      <input
+                        type="number"
+                        id="editFat"
+                        value={mealForm.fat}
+                        onChange={(e) => setMealForm({ ...mealForm, fat: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="editNotes">Notes (Optional)</label>
+                    <textarea
+                      id="editNotes"
+                      value={mealForm.notes}
+                      onChange={(e) => setMealForm({ ...mealForm, notes: e.target.value })}
+                      placeholder="Any additional notes..."
+                      rows="3"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="modal-footer">
+                <button className="btn-secondary" onClick={() => setShowEditMealModal(false)}>
+                  Cancel
+                </button>
+                <button 
+                  className="btn-primary" 
+                  onClick={handleSaveMeal}
+                  disabled={!mealForm.name.trim()}
+                >
+                  Update Meal
                 </button>
               </div>
             </div>

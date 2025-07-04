@@ -12,6 +12,8 @@ export default function BucketListApp() {
   } = useFeatures()
 
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteItemId, setDeleteItemId] = useState(null)
   const [filterCategory, setFilterCategory] = useState('all')
   const [sortBy, setSortBy] = useState('created') // 'created', 'category', 'completed'
   const [itemForm, setItemForm] = useState({
@@ -90,9 +92,21 @@ export default function BucketListApp() {
   }
 
   const handleDeleteItem = (itemId) => {
-    if (window.confirm('Are you sure you want to delete this goal?')) {
-      deleteBucketListItem(itemId)
+    setDeleteItemId(itemId)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = () => {
+    if (deleteItemId) {
+      deleteBucketListItem(deleteItemId)
+      setShowDeleteModal(false)
+      setDeleteItemId(null)
     }
+  }
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false)
+    setDeleteItemId(null)
   }
 
   const getFilteredAndSortedItems = () => {
@@ -378,6 +392,27 @@ export default function BucketListApp() {
                   disabled={saving || !itemForm.title.trim()}
                 >
                   {saving ? 'Adding...' : '🎯 Add Goal'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="delete-confirmation-modal">
+            <div className="delete-confirmation-content">
+              <div className="delete-confirmation-icon">🗑️</div>
+              <h3 className="delete-confirmation-title">Delete Goal</h3>
+              <p className="delete-confirmation-message">
+                Are you sure you want to delete this goal? This action cannot be undone.
+              </p>
+              <div className="delete-confirmation-actions">
+                <button className="delete-confirmation-cancel" onClick={cancelDelete}>
+                  Cancel
+                </button>
+                <button className="delete-confirmation-confirm" onClick={confirmDelete}>
+                  Delete
                 </button>
               </div>
             </div>

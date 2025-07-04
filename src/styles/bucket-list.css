@@ -10,6 +10,7 @@
 .stats-section {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-xl);
   margin-bottom: var(--spacing-lg);
 }
@@ -17,6 +18,9 @@
 .progress-circle {
   position: relative;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .progress-circle svg {
@@ -29,6 +33,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+  z-index: 2;
 }
 
 .progress-percentage {
@@ -281,4 +286,85 @@
     transform: rotate(720deg);
     opacity: 0;
   }
+}
+
+/* Custom delete confirmation modal */
+.delete-confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: var(--spacing-md);
+}
+
+.delete-confirmation-content {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  max-width: 400px;
+  width: 100%;
+  padding: var(--spacing-lg);
+  text-align: center;
+}
+
+.delete-confirmation-icon {
+  font-size: 48px;
+  color: var(--error-color);
+  margin-bottom: var(--spacing-md);
+}
+
+.delete-confirmation-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.delete-confirmation-message {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.5;
+}
+
+.delete-confirmation-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+}
+
+.delete-confirmation-cancel {
+  background: white;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 12px 24px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-confirmation-cancel:hover {
+  background: #f7fafc;
+  border-color: var(--primary-color);
+}
+
+.delete-confirmation-confirm {
+  background: var(--error-color);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-confirmation-confirm:hover {
+  background: #e53e3e;
 }
