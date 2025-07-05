@@ -23,10 +23,35 @@ export default function MyHabits() {
   const [showPreferencesModal, setShowPreferencesModal] = useState(false)
   const [showStackBuilder, setShowStackBuilder] = useState(false)
   const [editingStack, setEditingStack] = useState(null)
-  const [activeTab, setActiveTab] = useState('habits') // 'habits' or 'stacks'
+  const [activeTab, setActiveTab] = useState('habits')
+  const [holdTimers, setHoldTimers] = useState({})
+  const [heldHabit, setHeldHabit] = useState(null)
 
   const habitsList = Object.values(habits)
   const habitStacks = getHabitStacks()
+
+  const HOLD_DURATION = 1500
+
+  const startHold = (habitId, isStack = false) => {
+    if (holdTimers[habitId]) return
+
+    const timer = setTimeout(() => {
+      isStack ? handleCompleteHabitInStack(habitId) : handleCompleteHabit(habitId)
+      setHeldHabit(null)
+      setHoldTimers(prev => ({ ...prev, [habitId]: null }))
+    }, HOLD_DURATION)
+
+    setHeldHabit(habitId)
+    setHoldTimers(prev => ({ ...prev, [habitId]: timer }))
+  }
+
+  const cancelHold = (habitId) => {
+    if (holdTimers[habitId]) {
+      clearTimeout(holdTimers[habitId])
+      setHoldTimers(prev => ({ ...prev, [habitId]: null }))
+      setHeldHabit(null)
+    }
+  }
 
   const handleCompleteHabit = (habitId) => {
     if (isHabitCompletedToday(habitId)) {
@@ -81,7 +106,7 @@ export default function MyHabits() {
   const renderHabitPreferences = (habitId) => {
     const preferences = getHabitPreferences(habitId)
     const config = getHabitPreferenceConfig(habitId)
-    
+
     if (!config || Object.keys(preferences).length === 0) {
       return null
     }
@@ -91,7 +116,6 @@ export default function MyHabits() {
         {config.fields.slice(0, 2).map(field => {
           const value = preferences[field.key]
           if (!value) return null
-          
           return (
             <div key={field.key} className="preference-item">
               <span className="preference-label">{field.label}:</span>
@@ -157,7 +181,7 @@ export default function MyHabits() {
             {habitsList.map((habit) => {
               const hasPreferences = hasCustomPreferences(habit.id)
               const isCompleted = isHabitCompletedToday(habit.id)
-              
+
               return (
                 <div key={habit.id} className="habit-item">
                   <div className="habit-header">
@@ -192,17 +216,29 @@ export default function MyHabits() {
                   </div>
 
                   {hasPreferences && renderHabitPreferences(habit.id)}
-                  
+
                   <div className="habit-actions">
-                    <button
-                      className={`action-btn ${habit.type === 'build' ? 'complete' : 'resist'} ${isCompleted ? (habit.type === 'build' ? 'completed' : 'resisted') : ''}`}
-                      onClick={() => handleCompleteHabit(habit.id)}
+                    <div
+                      className="hold-button-wrapper"
+                      onMouseDown={() => startHold(habit.id)}
+                      onMouseUp={() => cancelHold(habit.id)}
+                      onMouseLeave={() => cancelHold(habit.id)}
+                      onTouchStart={() => startHold(habit.id)}
+                      onTouchEnd={() => cancelHold(habit.id)}
+                      onTouchCancel={() => cancelHold(habit.id)}
                     >
-                      {isCompleted 
-                        ? (habit.type === 'build' ? 'Completed Today!' : 'Resisted Today!')
-                        : (habit.type === 'build' ? 'Mark Complete' : 'Mark Resisted')
-                      }
-                    </button>
+                      {heldHabit === habit.id && (
+                        <div className="hold-progress-circle" />
+                      )}
+                      <button
+                        className={`action-btn ${habit.type === 'build' ? 'complete' : 'resist'} ${isCompleted ? (habit.type === 'build' ? 'completed' : 'resisted') : ''}`}
+                      >
+                        {isCompleted 
+                          ? (habit.type === 'build' ? 'Completed Today!' : 'Resisted Today!')
+                          : (habit.type === 'build' ? 'Hold to Complete' : 'Hold to Resist')
+                        }
+                      </button>
+                    </div>
                     {isCompleted && (
                       <button 
                         className="undo-btn" 
@@ -289,11 +325,11 @@ export default function MyHabits() {
                           />
                         </div>
                       </div>
-                      
+
                       <div className="stack-habits-flow">
                         {stack.habits.map((habit, index) => {
                           const isCompleted = isHabitCompletedToday(habit.id)
-                          const habitExists = habits[habit.id] // Check if habit still exists
+                          const habitExists = habits[habit.id]
                           
                           return (
                             <div key={habit.id} className="stack-habit-flow-item">
@@ -303,12 +339,24 @@ export default function MyHabits() {
                                 <div className="habit-info">
                                   <div className="habit-name">{habit.name}</div>
                                   {habitExists ? (
-                                    <button
-                                      className={`complete-btn ${isCompleted ? 'completed' : ''}`}
-                                      onClick={() => handleCompleteHabitInStack(habit.id)}
+                                    <div
+                                      className="hold-button-wrapper"
+                                      onMouseDown={() => startHold(habit.id, true)}
+                                      onMouseUp={() => cancelHold(habit.id)}
+                                      onMouseLeave={() => cancelHold(habit.id)}
+                                      onTouchStart={() => startHold(habit.id, true)}
+                                      onTouchEnd={() => cancelHold(habit.id)}
+                                      onTouchCancel={() => cancelHold(habit.id)}
                                     >
-                                      {isCompleted ? '✓ Completed' : 'Complete'}
-                                    </button>
+                                      {heldHabit === habit.id && (
+                                        <div className="hold-progress-circle" />
+                                      )}
+                                      <button
+                                        className={`complete-btn ${isCompleted ? 'completed' : ''}`}
+                                      >
+                                        {isCompleted ? '✓ Completed' : 'Hold to Complete'}
+                                      </button>
+                                    </div>
                                   ) : (
                                     <div className="habit-removed">Habit removed</div>
                                   )}
