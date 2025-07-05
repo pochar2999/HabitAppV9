@@ -90,10 +90,10 @@
 .progress-chart-bars {
   display: flex;
   gap: var(--spacing-xs);
-  height: 120px;
+  height: 60px;
   align-items: flex-end;
   margin-bottom: var(--spacing-xs);
-  width: 200%;
+  width: 100%;
 }
 
 .chart-bar {
