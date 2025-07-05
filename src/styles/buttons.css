@@ -140,7 +140,7 @@
 .hold-button-wrapper {
   position: relative;
   /* display: block;       /* <-- Changed from inline-block */
-  /* width: 100%;          /* <-- Added for full width */
+  width: 100%;          <-- Added for full width */
   overflow: hidden;
 }
 
