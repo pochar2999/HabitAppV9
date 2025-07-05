@@ -75,7 +75,6 @@
   box-shadow: var(--shadow-lg);
 }
 
-/* UPDATED: Ensure full-width buttons */
 .action-btn {
   padding: 12px 24px;
   border: none;
@@ -84,9 +83,6 @@
   cursor: pointer;
   transition: all 0.2s ease;
   flex: 1;
-  width: 100%;          /* <-- Added to force full width */
-  position: relative;   /* <-- Added for layering */
-  z-index: 2;           /* <-- Ensure button is above progress circle */
 }
 
 .action-btn.complete {
@@ -134,38 +130,4 @@
 .remove-habit-btn:hover {
   background: #fed7d7;
   color: #742a2a;
-}
-
-/* UPDATED: Hold button wrapper full width and block */
-.hold-button-wrapper {
-  position: relative;
-  display: block;
-  width: 100%; /* or a fixed width */
-  aspect-ratio: 1 / 1; /* makes height equal to width */
-  overflow: hidden;
-}
-
-/* Progress circle overlay */
-.hold-progress-circle {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: rgba(0, 128, 0, 0.2);
-  transform: scale(0);
-  transform-origin: center;
-  animation: fillHold 1.5s linear forwards;
-  z-index: 1;
-  pointer-events: none;
-}
-
-@keyframes fillHold {
-  from {
-    transform: scale(0);
-  }
-  to {
-    transform: scale(1);
-  }
 }
