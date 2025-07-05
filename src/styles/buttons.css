@@ -134,6 +134,12 @@
 
 /*to hold button*/
 
+.hold-button-wrapper {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+}
+
 .hold-progress-circle {
   position: absolute;
   top: 0;
