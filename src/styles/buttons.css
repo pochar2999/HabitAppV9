@@ -160,11 +160,11 @@
   pointer-events: none;
 }
 
-@keyframes fillHold {
+/* @keyframes fillHold {
   from {
     transform: scale(0);
   }
   to {
     transform: scale(1);
   }
-}
+} */
