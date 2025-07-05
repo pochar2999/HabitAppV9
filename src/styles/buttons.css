@@ -149,8 +149,8 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100px; /* makes it bigger */
-  height: 100px; /* same as width = perfect circle */
+  width: 75000px; /* makes it bigger */
+  height: 500px; /* same as width = perfect circle */
   border-radius: 50%;
   background: rgba(0, 128, 0, 0.2);
   transform: translate(-50%, -50%) scale(0);
