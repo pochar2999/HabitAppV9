@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import HabitPreferencesModal from '../components/HabitPreferencesModal'
@@ -8,10 +8,10 @@ import { getHabitPreferenceConfig, hasCustomPreferences } from '../data/habitPre
 
 export default function MyHabits() {
   const navigate = useNavigate()
-  const { 
-    habits, 
-    removeHabit, 
-    completeHabit, 
+  const {
+    habits,
+    removeHabit,
+    completeHabit,
     uncompleteHabit,
     isHabitCompletedToday,
     getHabitPreferences,
@@ -24,49 +24,32 @@ export default function MyHabits() {
   const [showStackBuilder, setShowStackBuilder] = useState(false)
   const [editingStack, setEditingStack] = useState(null)
   const [activeTab, setActiveTab] = useState('habits')
-  const [holdTimers, setHoldTimers] = useState({})
   const [heldHabit, setHeldHabit] = useState(null)
 
   const habitsList = Object.values(habits)
   const habitStacks = getHabitStacks()
 
-  const HOLD_DURATION = 1500
+  const holdTimeout = useRef(null)
 
   const startHold = (habitId, isStack = false) => {
-    if (holdTimers[habitId]) return
-
-    const timer = setTimeout(() => {
-      isStack ? handleCompleteHabitInStack(habitId) : handleCompleteHabit(habitId)
-      setHeldHabit(null)
-      setHoldTimers(prev => ({ ...prev, [habitId]: null }))
-    }, HOLD_DURATION)
-
     setHeldHabit(habitId)
-    setHoldTimers(prev => ({ ...prev, [habitId]: timer }))
-  }
-
-  const cancelHold = (habitId) => {
-    if (holdTimers[habitId]) {
-      clearTimeout(holdTimers[habitId])
-      setHoldTimers(prev => ({ ...prev, [habitId]: null }))
+    holdTimeout.current = setTimeout(() => {
+      if (isStack) {
+        completeHabit(habitId)
+      } else {
+        if (isHabitCompletedToday(habitId)) {
+          uncompleteHabit(habitId)
+        } else {
+          completeHabit(habitId)
+        }
+      }
       setHeldHabit(null)
-    }
+    }, 1500)
   }
 
-  const handleCompleteHabit = (habitId) => {
-    if (isHabitCompletedToday(habitId)) {
-      uncompleteHabit(habitId)
-    } else {
-      completeHabit(habitId)
-    }
-  }
-
-  const handleCompleteHabitInStack = (habitId) => {
-    if (isHabitCompletedToday(habitId)) {
-      uncompleteHabit(habitId)
-    } else {
-      completeHabit(habitId)
-    }
+  const cancelHold = () => {
+    clearTimeout(holdTimeout.current)
+    setHeldHabit(null)
   }
 
   const handleRemoveHabit = (habitId) => {
@@ -93,23 +76,11 @@ export default function MyHabits() {
     }
   }
 
-  const closePreferencesModal = () => {
-    setShowPreferencesModal(false)
-    setSelectedHabit(null)
-  }
-
-  const closeStackBuilder = () => {
-    setShowStackBuilder(false)
-    setEditingStack(null)
-  }
-
   const renderHabitPreferences = (habitId) => {
     const preferences = getHabitPreferences(habitId)
     const config = getHabitPreferenceConfig(habitId)
 
-    if (!config || Object.keys(preferences).length === 0) {
-      return null
-    }
+    if (!config || Object.keys(preferences).length === 0) return null
 
     return (
       <div className="habit-preferences-summary">
@@ -128,12 +99,12 @@ export default function MyHabits() {
   }
 
   const getStackProgress = (stack) => {
-    const completedCount = stack.habits.filter(habit => 
+    const completedCount = stack.habits.filter(habit =>
       isHabitCompletedToday(habit.id)
     ).length
     const totalCount = stack.habits.length
     const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
-    
+
     return { completedCount, totalCount, percentage }
   }
 
@@ -142,9 +113,9 @@ export default function MyHabits() {
       <Layout title="My Habits">
         <div className="habits-content">
           <div className="no-habits">
-            <img 
-              src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=120&h=120&fit=crop&crop=center" 
-              alt="No habits" 
+            <img
+              src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=120&h=120&fit=crop&crop=center"
+              alt="No habits"
               className="no-habits-image"
             />
             <h3>No Active Habits</h3>
@@ -162,13 +133,13 @@ export default function MyHabits() {
     <Layout title="My Habits">
       <div className="habits-content">
         <div className="habits-tabs">
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'habits' ? 'active' : ''}`}
             onClick={() => setActiveTab('habits')}
           >
             Individual Habits ({habitsList.length})
           </button>
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'stacks' ? 'active' : ''}`}
             onClick={() => setActiveTab('stacks')}
           >
@@ -178,36 +149,30 @@ export default function MyHabits() {
 
         {activeTab === 'habits' && (
           <div className="habits-tab-content">
-            {habitsList.map((habit) => {
+            {habitsList.map(habit => {
               const hasPreferences = hasCustomPreferences(habit.id)
               const isCompleted = isHabitCompletedToday(habit.id)
 
               return (
                 <div key={habit.id} className="habit-item">
                   <div className="habit-header">
-                    <div 
+                    <div
                       className="habit-header-left"
                       onClick={() => handleHabitClick(habit)}
                       style={{ cursor: hasPreferences ? 'pointer' : 'default' }}
                     >
-                      <img 
-                        src={habit.image} 
-                        alt={habit.name} 
-                        className="habit-item-image"
-                      />
+                      <img src={habit.image} alt={habit.name} className="habit-item-image" />
                       <div>
                         <div className="habit-title">
                           {habit.name}
                           {hasPreferences && (
-                            <span className="preferences-indicator" title="Click to edit preferences">
-                              ⚙️
-                            </span>
+                            <span className="preferences-indicator" title="Click to edit preferences">⚙️</span>
                           )}
                         </div>
                         <div className="habit-streak">{habit.streak || 0} day streak</div>
                       </div>
                     </div>
-                    <button 
+                    <button
                       className="remove-habit-btn"
                       onClick={() => handleRemoveHabit(habit.id)}
                     >
@@ -221,11 +186,11 @@ export default function MyHabits() {
                     <div
                       className="hold-button-wrapper"
                       onMouseDown={() => startHold(habit.id)}
-                      onMouseUp={() => cancelHold(habit.id)}
-                      onMouseLeave={() => cancelHold(habit.id)}
+                      onMouseUp={cancelHold}
+                      onMouseLeave={cancelHold}
                       onTouchStart={() => startHold(habit.id)}
-                      onTouchEnd={() => cancelHold(habit.id)}
-                      onTouchCancel={() => cancelHold(habit.id)}
+                      onTouchEnd={cancelHold}
+                      onTouchCancel={cancelHold}
                     >
                       {heldHabit === habit.id && (
                         <div className="hold-progress-circle" />
@@ -233,17 +198,15 @@ export default function MyHabits() {
                       <button
                         className={`action-btn ${habit.type === 'build' ? 'complete' : 'resist'} ${isCompleted ? (habit.type === 'build' ? 'completed' : 'resisted') : ''}`}
                       >
-                        {isCompleted 
+                        {isCompleted
                           ? (habit.type === 'build' ? 'Completed Today!' : 'Resisted Today!')
                           : (habit.type === 'build' ? 'Hold to Complete' : 'Hold to Resist')
                         }
                       </button>
                     </div>
+
                     {isCompleted && (
-                      <button 
-                        className="undo-btn" 
-                        onClick={() => uncompleteHabit(habit.id)}
-                      >
+                      <button className="undo-btn" onClick={() => uncompleteHabit(habit.id)}>
                         Undo
                       </button>
                     )}
@@ -254,13 +217,11 @@ export default function MyHabits() {
           </div>
         )}
 
+        {/* Habit Stacks Tab */}
         {activeTab === 'stacks' && (
           <div className="stacks-tab-content">
             <div className="stacks-header">
-              <button 
-                className="create-stack-btn"
-                onClick={() => setShowStackBuilder(true)}
-              >
+              <button className="create-stack-btn" onClick={() => setShowStackBuilder(true)}>
                 + Create New Stack
               </button>
               <p className="stacks-description">
@@ -270,9 +231,9 @@ export default function MyHabits() {
 
             {habitStacks.length === 0 ? (
               <div className="no-stacks">
-                <img 
-                  src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=120&h=120&fit=crop&crop=center" 
-                  alt="No stacks" 
+                <img
+                  src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=120&h=120&fit=crop&crop=center"
+                  alt="No stacks"
                   className="no-stacks-image"
                 />
                 <h3>No Habit Stacks</h3>
@@ -280,34 +241,21 @@ export default function MyHabits() {
               </div>
             ) : (
               <div className="stacks-list">
-                {habitStacks.map((stack) => {
+                {habitStacks.map(stack => {
                   const progress = getStackProgress(stack)
-                  
                   return (
                     <div key={stack.id} className="stack-card">
                       <div className="stack-header">
                         <div className="stack-info">
                           <h3 className="stack-name">{stack.name}</h3>
-                          {stack.description && (
-                            <p className="stack-description">{stack.description}</p>
-                          )}
+                          {stack.description && <p className="stack-description">{stack.description}</p>}
                           <div className="stack-meta">
                             {stack.habits.length} habits • Created {new Date(stack.createdAt).toLocaleDateString()}
                           </div>
                         </div>
                         <div className="stack-actions">
-                          <button 
-                            className="edit-stack-btn"
-                            onClick={() => handleEditStack(stack)}
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            className="delete-stack-btn"
-                            onClick={() => handleDeleteStack(stack.id)}
-                          >
-                            Delete
-                          </button>
+                          <button className="edit-stack-btn" onClick={() => handleEditStack(stack)}>Edit</button>
+                          <button className="delete-stack-btn" onClick={() => handleDeleteStack(stack.id)}>Delete</button>
                         </div>
                       </div>
 
@@ -319,10 +267,7 @@ export default function MyHabits() {
                           <span className="progress-percentage">{progress.percentage}%</span>
                         </div>
                         <div className="progress-bar">
-                          <div 
-                            className="progress-fill" 
-                            style={{ width: `${progress.percentage}%` }}
-                          />
+                          <div className="progress-fill" style={{ width: `${progress.percentage}%` }} />
                         </div>
                       </div>
 
@@ -330,7 +275,7 @@ export default function MyHabits() {
                         {stack.habits.map((habit, index) => {
                           const isCompleted = isHabitCompletedToday(habit.id)
                           const habitExists = habits[habit.id]
-                          
+
                           return (
                             <div key={habit.id} className="stack-habit-flow-item">
                               <div className="habit-step">
@@ -342,18 +287,14 @@ export default function MyHabits() {
                                     <div
                                       className="hold-button-wrapper"
                                       onMouseDown={() => startHold(habit.id, true)}
-                                      onMouseUp={() => cancelHold(habit.id)}
-                                      onMouseLeave={() => cancelHold(habit.id)}
+                                      onMouseUp={cancelHold}
+                                      onMouseLeave={cancelHold}
                                       onTouchStart={() => startHold(habit.id, true)}
-                                      onTouchEnd={() => cancelHold(habit.id)}
-                                      onTouchCancel={() => cancelHold(habit.id)}
+                                      onTouchEnd={cancelHold}
+                                      onTouchCancel={cancelHold}
                                     >
-                                      {heldHabit === habit.id && (
-                                        <div className="hold-progress-circle" />
-                                      )}
-                                      <button
-                                        className={`complete-btn ${isCompleted ? 'completed' : ''}`}
-                                      >
+                                      {heldHabit === habit.id && <div className="hold-progress-circle" />}
+                                      <button className={`complete-btn ${isCompleted ? 'completed' : ''}`}>
                                         {isCompleted ? '✓ Completed' : 'Hold to Complete'}
                                       </button>
                                     </div>
@@ -381,7 +322,7 @@ export default function MyHabits() {
       {selectedHabit && (
         <HabitPreferencesModal
           isOpen={showPreferencesModal}
-          onClose={closePreferencesModal}
+          onClose={() => setShowPreferencesModal(false)}
           habitId={selectedHabit.id}
           habitName={selectedHabit.name}
           preferenceConfig={getHabitPreferenceConfig(selectedHabit.id)}
@@ -390,7 +331,7 @@ export default function MyHabits() {
 
       <HabitStackBuilder
         isOpen={showStackBuilder}
-        onClose={closeStackBuilder}
+        onClose={() => setShowStackBuilder(false)}
         editingStack={editingStack}
       />
     </Layout>
