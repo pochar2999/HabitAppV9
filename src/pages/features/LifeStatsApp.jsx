@@ -106,7 +106,7 @@ export default function LifeStatsApp() {
         <div className="profile-header">
           <div className="profile-avatar">
             <img 
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face" 
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face" 
               alt="Profile" 
             />
             <div className="level-badge">Lv. {stats.level}</div>

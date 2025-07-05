@@ -90,9 +90,10 @@
 .progress-chart-bars {
   display: flex;
   gap: var(--spacing-xs);
-  height: 60px;
+  height: 120px;
   align-items: flex-end;
   margin-bottom: var(--spacing-xs);
+  width: 100%;
 }
 
 .chart-bar {
@@ -101,6 +102,7 @@
   border-radius: 2px 2px 0 0;
   min-height: 4px;
   transition: all 0.3s ease;
+  width: 100%;
 }
 
 .chart-bar.completed {
@@ -117,10 +119,12 @@
   font-size: 12px;
   color: var(--text-secondary);
   text-align: center;
+  width: 100%;
 }
 
 .chart-labels > div {
   flex: 1;
+  text-align: center;
 }
 
 .progress-stats {
