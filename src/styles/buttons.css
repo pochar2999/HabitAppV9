@@ -150,7 +150,7 @@
   top: 50%;
   left: 50%;
   width: 100%; /* makes it bigger */
-  height: 1000%; /* same as width = perfect circle */
+  height: 100%; /* same as width = perfect circle */
   border-radius: 50%;
   background: rgba(0, 128, 0, 0.2);
   transform: translate(-50%, -50%) scale(0);
