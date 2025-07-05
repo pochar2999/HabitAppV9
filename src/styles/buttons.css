@@ -155,7 +155,7 @@
   background: rgba(0, 128, 0, 0.15);
   transform: translate(-50%, -50%) scale(0);
   transform-origin: center;
-  /* animation: fillHold 1.5s linear forwards; */
+  animation: fillHold 1.5s linear forwards;
   z-index: 5;
   pointer-events: none;
 }
