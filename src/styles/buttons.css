@@ -139,8 +139,10 @@
 /* UPDATED: Hold button wrapper full width and block */
 .hold-button-wrapper {
   position: relative;
-  display: block;
-  width: 100%;          
+  display: flex;         /* Use flex to center children */
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   overflow: hidden;
 }
 
