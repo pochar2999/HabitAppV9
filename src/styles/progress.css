@@ -93,7 +93,7 @@
   height: 120px;
   align-items: flex-end;
   margin-bottom: var(--spacing-xs);
-  width: 100%;
+  width: 200%;
 }
 
 .chart-bar {
