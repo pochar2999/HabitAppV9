@@ -149,14 +149,14 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 120px;
-  height: 120px;
+  width: 100px; /* makes it bigger */
+  height: 100px; /* same as width = perfect circle */
   border-radius: 50%;
   background: rgba(0, 128, 0, 0.2);
-  transform: scale(0);
+  transform: translate(-50%, -50%) scale(0);
   transform-origin: center;
   animation: fillHold 1.5s linear forwards;
-  z-index: 5;
+  z-index: 1;
   pointer-events: none;
 }
 
