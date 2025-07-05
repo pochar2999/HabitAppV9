@@ -147,8 +147,8 @@
 /* Progress circle overlay */
 .hold-progress-circle {
   position: absolute;
-  top: 0%;
-  left: 100%;
+  top: 50%;
+  left: 50%;
   width: 750px; /* makes it bigger */
   height: 500px; /* same as width = perfect circle */
   border-radius: 50%;
