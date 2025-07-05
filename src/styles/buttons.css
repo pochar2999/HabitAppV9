@@ -157,7 +157,7 @@
   transform: scale(0);
   transform-origin: center;
   animation: fillHold 1.5s linear forwards;
-  z-index: 10;
+  z-index: 1;
   pointer-events: none;
 }
 
