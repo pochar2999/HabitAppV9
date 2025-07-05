@@ -822,3 +822,11 @@
   transform-origin: center;
 }
 
+.action-btn, .complete-btn {
+  position: relative;
+  z-index: 2; /* ensures button stays above the animated circle */
+  padding: 10px 16px;
+  min-width: 120px;
+  font-size: 14px;
+  transition: background 0.3s;
+}
