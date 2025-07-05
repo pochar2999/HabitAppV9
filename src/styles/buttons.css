@@ -137,8 +137,7 @@
 .hold-button-wrapper {
   position: relative;
   display: inline-block;
-  width: fit-content; /* ensures it wraps the button tightly */
-  height: 100%;
+  overflow: hidden;
 }
 
 .hold-progress-circle {
@@ -148,12 +147,12 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: rgba(0, 128, 0, 0.15); /* translucent fill */
-  pointer-events: none;
-  z-index: 1;
-  animation: fillHold 1.5s linear forwards;
+  background: rgba(0, 128, 0, 0.2);
   transform: scale(0);
   transform-origin: center;
+  animation: fillHold 1.5s linear forwards;
+  z-index: 1;
+  pointer-events: none;
 }
 
 @keyframes fillHold {
