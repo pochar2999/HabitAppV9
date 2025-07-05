@@ -153,7 +153,7 @@
   height: 500px; /* same as width = perfect circle */
   border-radius: 50%;
   background: rgba(0, 128, 0, 0.2);
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(0);
   transform-origin: center;
   animation: fillHold 1.5s linear forwards;
   z-index: 5;
