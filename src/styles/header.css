@@ -145,3 +145,46 @@
 .logout-btn:hover {
   background-color: #fed7d7;
 }
+
+/* Back button styles for features */
+.back-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  position: absolute;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(-2px);
+}
+
+/* Ensure back button is visible on feature pages */
+.header-content {
+  padding-left: 100px; /* Make room for back button */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header-content {
+    padding-left: 80px;
+  }
+  
+  .back-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}

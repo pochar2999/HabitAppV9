@@ -15,18 +15,19 @@
 
 .profile-header {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  gap: var(--spacing-md);
-  text-align: center;
+  gap: var(--spacing-lg);
+  width: 100%;
 }
 
 .profile-avatar {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-sm);
+  margin-left: 20px;
+  flex-shrink: 0;
 }
 
 .profile-avatar img {
@@ -50,7 +51,9 @@
 }
 
 .profile-info {
-  width: 100%;
+  flex: 1;
+  margin-right: 20px;
+  text-align: left;
 }
 
 .profile-info h3 {
@@ -66,8 +69,8 @@
   height: 8px;
   border-radius: 4px;
   overflow: hidden;
-  width: 200px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 300px;
 }
 
 .xp-fill {
@@ -362,4 +365,25 @@
   display: flex;
   align-items: center;
   gap: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .profile-avatar {
+    margin-left: 0;
+  }
+  
+  .profile-info {
+    margin-right: 0;
+    text-align: center;
+  }
+  
+  .xp-bar {
+    max-width: 250px;
+  }
 }
