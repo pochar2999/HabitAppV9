@@ -84,9 +84,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   flex: 1;
-  width: 100%;          /* <-- Added to force full width */
-  position: relative;   /* <-- Added for layering */
-  z-index: 2;           /* <-- Ensure button is above progress circle */
+  
 }
 
 .action-btn.complete {
