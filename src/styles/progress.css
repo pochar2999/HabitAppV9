@@ -91,7 +91,7 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: var(--spacing-xs);
-  height: 60px;
+  height: 100px;
   align-items: end;
   margin-bottom: var(--spacing-xs);
   width: 100%;
