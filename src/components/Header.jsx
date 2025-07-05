@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useHabits } from '../contexts/HabitContext'
 import WeeklyProgress from './WeeklyProgress'
 
 export default function Header({ title, showBackButton = false, backTo = "/" }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { currentUser, logout } = useAuth()
   const { getActiveHabitsCount, getCurrentStreak } = useHabits()
   const [showDropdown, setShowDropdown] = useState(false)
@@ -23,11 +24,14 @@ export default function Header({ title, showBackButton = false, backTo = "/" }) 
   const activeHabits = getActiveHabitsCount()
   const currentStreak = getCurrentStreak()
 
+  // Check if we're in a feature app
+  const isFeatureApp = location.pathname.startsWith('/features/') && location.pathname !== '/features'
+
   return (
     <header className="header">
       <div className="header-content">
-        {showBackButton && (
-          <button className="back-btn" onClick={() => navigate(backTo)}>
+        {(showBackButton || isFeatureApp) && (
+          <button className="back-btn" onClick={() => navigate(isFeatureApp ? '/features' : backTo)}>
             ← Back
           </button>
         )}
