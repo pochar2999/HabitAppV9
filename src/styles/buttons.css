@@ -139,7 +139,7 @@
 /* UPDATED: Hold button wrapper full width and block */
 .hold-button-wrapper {
   position: relative;
-  display: block;     
+  /* display: block;      */ 
   width: 100%;          
   overflow: hidden;
 }
