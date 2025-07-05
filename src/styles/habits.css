@@ -797,3 +797,33 @@
   font-weight: 600;
   margin: 0;
 }
+
+.hold-button-wrapper {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.hold-progress-circle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(0, 128, 0, 0.2);
+  transform: scale(0);
+  transform-origin: center;
+  animation: fillHold 1.5s linear forwards;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes fillHold {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
