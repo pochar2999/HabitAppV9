@@ -14,7 +14,7 @@ export default function MealTrackerApp() {
     getMealTrackerSettings
   } = useFeatures()
 
-  const [activeTab, setActiveTab] = useState('today') // 'today', 'history', 'settings'
+  const [activeTab, setActiveTab] = useState('today') // 'today', 'history', 'goals'
   const [showAddMealModal, setShowAddMealModal] = useState(false)
   const [showEditMealModal, setShowEditMealModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -227,18 +227,30 @@ export default function MealTrackerApp() {
             <div className="nutrition-item">
               <div className="nutrition-value">{totalNutrition.calories}</div>
               <div className="nutrition-label">Calories</div>
+              {settings.calorieGoal && (
+                <div className="nutrition-goal">Goal: {settings.calorieGoal}</div>
+              )}
             </div>
             <div className="nutrition-item">
               <div className="nutrition-value">{totalNutrition.protein}g</div>
               <div className="nutrition-label">Protein</div>
+              {settings.proteinGoal && (
+                <div className="nutrition-goal">Goal: {settings.proteinGoal}g</div>
+              )}
             </div>
             <div className="nutrition-item">
               <div className="nutrition-value">{totalNutrition.carbs}g</div>
               <div className="nutrition-label">Carbs</div>
+              {settings.carbsGoal && (
+                <div className="nutrition-goal">Goal: {settings.carbsGoal}g</div>
+              )}
             </div>
             <div className="nutrition-item">
               <div className="nutrition-value">{totalNutrition.fat}g</div>
               <div className="nutrition-label">Fat</div>
+              {settings.fatGoal && (
+                <div className="nutrition-goal">Goal: {settings.fatGoal}g</div>
+              )}
             </div>
           </div>
         </div>
@@ -329,6 +341,14 @@ export default function MealTrackerApp() {
             const dateObj = new Date(date)
             const isToday = date === today
             
+            // Calculate nutrition totals for this date
+            const dayNutrition = meals.reduce((total, meal) => ({
+              calories: total.calories + (meal.calories || 0),
+              protein: total.protein + (meal.protein || 0),
+              carbs: total.carbs + (meal.carbs || 0),
+              fat: total.fat + (meal.fat || 0)
+            }), { calories: 0, protein: 0, carbs: 0, fat: 0 })
+            
             return (
               <div key={date} className="history-day">
                 <div className="history-date">
@@ -341,14 +361,55 @@ export default function MealTrackerApp() {
                   </div>
                 </div>
                 
-                <div className="history-stats">
-                  <div className="history-stat">
-                    <span className="stat-icon">🍽️</span>
-                    <span className="stat-value">{meals.length} meals</span>
+                <div className="history-details">
+                  <div className="history-stats">
+                    <div className="history-stat">
+                      <span className="stat-icon">🍽️</span>
+                      <span className="stat-value">{meals.length} meals</span>
+                    </div>
+                    <div className="history-stat">
+                      <span className="stat-icon">💧</span>
+                      <span className="stat-value">{water}/{waterGoal} glasses</span>
+                    </div>
                   </div>
-                  <div className="history-stat">
-                    <span className="stat-icon">💧</span>
-                    <span className="stat-value">{water}/{waterGoal} glasses</span>
+                  
+                  <div className="nutrition-summary-small">
+                    <div className="nutrition-item-small">
+                      <span className="nutrition-value-small">{dayNutrition.calories}</span>
+                      <span className="nutrition-label-small">cal</span>
+                      {settings.calorieGoal && (
+                        <span className="goal-vs-actual">
+                          / {settings.calorieGoal}
+                        </span>
+                      )}
+                    </div>
+                    <div className="nutrition-item-small">
+                      <span className="nutrition-value-small">{dayNutrition.protein}g</span>
+                      <span className="nutrition-label-small">protein</span>
+                      {settings.proteinGoal && (
+                        <span className="goal-vs-actual">
+                          / {settings.proteinGoal}g
+                        </span>
+                      )}
+                    </div>
+                    <div className="nutrition-item-small">
+                      <span className="nutrition-value-small">{dayNutrition.carbs}g</span>
+                      <span className="nutrition-label-small">carbs</span>
+                      {settings.carbsGoal && (
+                        <span className="goal-vs-actual">
+                          / {settings.carbsGoal}g
+                        </span>
+                      )}
+                    </div>
+                    <div className="nutrition-item-small">
+                      <span className="nutrition-value-small">{dayNutrition.fat}g</span>
+                      <span className="nutrition-label-small">fat</span>
+                      {settings.fatGoal && (
+                        <span className="goal-vs-actual">
+                          / {settings.fatGoal}g
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -359,50 +420,100 @@ export default function MealTrackerApp() {
     )
   }
 
-  const renderSettingsView = () => {
+  const renderGoalsView = () => {
     const [tempSettings, setTempSettings] = useState(settings)
 
     const handleSaveSettings = () => {
       handleUpdateSettings(tempSettings)
-      alert('Settings saved!')
+      alert('Goals saved!')
     }
 
     return (
-      <div className="meal-tracker-settings">
-        <h3>⚙️ Settings</h3>
+      <div className="meal-tracker-goals">
+        <h3>🎯 Daily Goals</h3>
         
-        <div className="settings-form">
-          <div className="setting-group">
-            <label htmlFor="waterGoal">Daily Water Goal (glasses)</label>
-            <input
-              type="number"
-              id="waterGoal"
-              value={tempSettings.waterGoal || 8}
-              onChange={(e) => setTempSettings({
-                ...tempSettings,
-                waterGoal: parseInt(e.target.value) || 8
-              })}
-              min="1"
-              max="20"
-            />
+        <div className="goals-form">
+          <div className="goals-section">
+            <h4>💧 Hydration Goals</h4>
+            <div className="setting-group">
+              <label htmlFor="waterGoal">Daily Water Goal (glasses)</label>
+              <input
+                type="number"
+                id="waterGoal"
+                value={tempSettings.waterGoal || 8}
+                onChange={(e) => setTempSettings({
+                  ...tempSettings,
+                  waterGoal: parseInt(e.target.value) || 8
+                })}
+                min="1"
+                max="20"
+              />
+            </div>
+          </div>
+
+          <div className="goals-section">
+            <h4>🍽️ Nutrition Goals</h4>
+            <div className="nutrition-goals-grid">
+              <div className="setting-group">
+                <label htmlFor="calorieGoal">Daily Calories</label>
+                <input
+                  type="number"
+                  id="calorieGoal"
+                  value={tempSettings.calorieGoal || ''}
+                  onChange={(e) => setTempSettings({
+                    ...tempSettings,
+                    calorieGoal: parseInt(e.target.value) || 0
+                  })}
+                  placeholder="e.g., 2000"
+                />
+              </div>
+              
+              <div className="setting-group">
+                <label htmlFor="proteinGoal">Daily Protein (g)</label>
+                <input
+                  type="number"
+                  id="proteinGoal"
+                  value={tempSettings.proteinGoal || ''}
+                  onChange={(e) => setTempSettings({
+                    ...tempSettings,
+                    proteinGoal: parseInt(e.target.value) || 0
+                  })}
+                  placeholder="e.g., 150"
+                />
+              </div>
+              
+              <div className="setting-group">
+                <label htmlFor="carbsGoal">Daily Carbs (g)</label>
+                <input
+                  type="number"
+                  id="carbsGoal"
+                  value={tempSettings.carbsGoal || ''}
+                  onChange={(e) => setTempSettings({
+                    ...tempSettings,
+                    carbsGoal: parseInt(e.target.value) || 0
+                  })}
+                  placeholder="e.g., 250"
+                />
+              </div>
+              
+              <div className="setting-group">
+                <label htmlFor="fatGoal">Daily Fat (g)</label>
+                <input
+                  type="number"
+                  id="fatGoal"
+                  value={tempSettings.fatGoal || ''}
+                  onChange={(e) => setTempSettings({
+                    ...tempSettings,
+                    fatGoal: parseInt(e.target.value) || 0
+                  })}
+                  placeholder="e.g., 65"
+                />
+              </div>
+            </div>
           </div>
           
-          <div className="setting-group">
-            <label htmlFor="calorieGoal">Daily Calorie Goal (optional)</label>
-            <input
-              type="number"
-              id="calorieGoal"
-              value={tempSettings.calorieGoal || ''}
-              onChange={(e) => setTempSettings({
-                ...tempSettings,
-                calorieGoal: parseInt(e.target.value) || 0
-              })}
-              placeholder="e.g., 2000"
-            />
-          </div>
-          
-          <button className="save-settings-btn" onClick={handleSaveSettings}>
-            Save Settings
+          <button className="save-goals-btn" onClick={handleSaveSettings}>
+            💾 Save Goals
           </button>
         </div>
       </div>
@@ -426,16 +537,16 @@ export default function MealTrackerApp() {
             History
           </button>
           <button 
-            className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('settings')}
+            className={`tab-btn ${activeTab === 'goals' ? 'active' : ''}`}
+            onClick={() => setActiveTab('goals')}
           >
-            Settings
+            Goals
           </button>
         </div>
 
         {activeTab === 'today' && renderTodayView()}
         {activeTab === 'history' && renderHistoryView()}
-        {activeTab === 'settings' && renderSettingsView()}
+        {activeTab === 'goals' && renderGoalsView()}
 
         {/* Add Meal Modal */}
         {showAddMealModal && (

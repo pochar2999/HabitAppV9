@@ -161,6 +161,13 @@
   font-weight: 600;
 }
 
+.nutrition-goal {
+  font-size: 10px;
+  color: var(--primary-color);
+  margin-top: 2px;
+  font-weight: 500;
+}
+
 .meals-section {
   background: white;
   border-radius: var(--border-radius-sm);
@@ -319,13 +326,20 @@
   padding: var(--spacing-md);
   box-shadow: var(--shadow-sm);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 .history-date .date-label {
   font-weight: 600;
   color: var(--text-primary);
+  font-size: 16px;
+}
+
+.history-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 .history-stats {
@@ -349,24 +363,76 @@
   font-weight: 600;
 }
 
-.meal-tracker-settings {
+.nutrition-summary-small {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: var(--spacing-sm);
+  background: #f8fafc;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+}
+
+.nutrition-item-small {
+  text-align: center;
+  font-size: 12px;
+}
+
+.nutrition-value-small {
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+.nutrition-label-small {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.goal-vs-actual {
+  color: var(--primary-color);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.meal-tracker-goals {
   background: white;
   border-radius: var(--border-radius-sm);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
 }
 
-.meal-tracker-settings h3 {
+.meal-tracker-goals h3 {
   font-size: 20px;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: var(--spacing-lg);
 }
 
-.settings-form {
+.goals-form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xl);
+}
+
+.goals-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.goals-section h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.nutrition-goals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
 }
 
 .setting-group {
@@ -385,22 +451,32 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   font-size: 16px;
+  transition: border-color 0.2s ease;
 }
 
-.save-settings-btn {
-  background: var(--primary-color);
+.setting-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.save-goals-btn {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
   color: white;
   border: none;
-  padding: 12px 24px;
+  padding: 16px 32px;
   border-radius: var(--border-radius-sm);
   font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
   align-self: flex-start;
+  box-shadow: var(--shadow-sm);
 }
 
-.save-settings-btn:hover {
-  background: var(--primary-hover);
+.save-goals-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .meal-form {

@@ -5,6 +5,7 @@ import HabitPreferencesModal from '../components/HabitPreferencesModal'
 import HabitStackBuilder from '../components/HabitStackBuilder'
 import { useHabits } from '../contexts/HabitContext'
 import { getHabitPreferenceConfig, hasCustomPreferences } from '../data/habitPreferences'
+import { habitsData } from '../data/habitsData'
 
 export default function MyHabits() {
   const navigate = useNavigate()
@@ -24,6 +25,8 @@ export default function MyHabits() {
   const [showStackBuilder, setShowStackBuilder] = useState(false)
   const [editingStack, setEditingStack] = useState(null)
   const [activeTab, setActiveTab] = useState('habits') // 'habits' or 'stacks'
+  const [showMethodsModal, setShowMethodsModal] = useState(false)
+  const [selectedHabitMethods, setSelectedHabitMethods] = useState(null)
 
   const habitsList = Object.values(habits)
   const habitStacks = getHabitStacks()
@@ -57,6 +60,14 @@ export default function MyHabits() {
     }
   }
 
+  const handleViewMethods = (habitId) => {
+    const habitData = habitsData[habitId]
+    if (habitData && habitData.methods) {
+      setSelectedHabitMethods(habitData)
+      setShowMethodsModal(true)
+    }
+  }
+
   const handleEditStack = (stack) => {
     setEditingStack(stack)
     setShowStackBuilder(true)
@@ -76,6 +87,11 @@ export default function MyHabits() {
   const closeStackBuilder = () => {
     setShowStackBuilder(false)
     setEditingStack(null)
+  }
+
+  const closeMethodsModal = () => {
+    setShowMethodsModal(false)
+    setSelectedHabitMethods(null)
   }
 
   const renderHabitPreferences = (habitId) => {
@@ -157,6 +173,8 @@ export default function MyHabits() {
             {habitsList.map((habit) => {
               const hasPreferences = hasCustomPreferences(habit.id)
               const isCompleted = isHabitCompletedToday(habit.id)
+              const habitData = habitsData[habit.id]
+              const hasMethods = habitData && habitData.methods && habitData.methods.length > 0
               
               return (
                 <div key={habit.id} className="habit-item">
@@ -183,12 +201,23 @@ export default function MyHabits() {
                         <div className="habit-streak">{habit.streak || 0} day streak</div>
                       </div>
                     </div>
-                    <button 
-                      className="remove-habit-btn"
-                      onClick={() => handleRemoveHabit(habit.id)}
-                    >
-                      Remove
-                    </button>
+                    <div className="habit-header-actions">
+                      {hasMethods && (
+                        <button 
+                          className="view-methods-btn"
+                          onClick={() => handleViewMethods(habit.id)}
+                          title="View habit methods"
+                        >
+                          📋 Methods
+                        </button>
+                      )}
+                      <button 
+                        className="remove-habit-btn"
+                        onClick={() => handleRemoveHabit(habit.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
 
                   {hasPreferences && renderHabitPreferences(habit.id)}
@@ -345,6 +374,49 @@ export default function MyHabits() {
         onClose={closeStackBuilder}
         editingStack={editingStack}
       />
+
+      {/* Habit Methods Modal */}
+      {showMethodsModal && selectedHabitMethods && (
+        <div className="modal-overlay" onClick={closeMethodsModal}>
+          <div className="modal-content habit-methods-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📋 {selectedHabitMethods.name} - Methods</h3>
+              <button className="modal-close" onClick={closeMethodsModal}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="habit-methods-content">
+                <div className="habit-description">
+                  <p>{selectedHabitMethods.description}</p>
+                </div>
+                
+                <div className="methods-section">
+                  <h4>Recommended Strategies</h4>
+                  {selectedHabitMethods.methods.map((method, index) => (
+                    <div key={index} className="method-card">
+                      <div className="method-title">{method.title}</div>
+                      <div className="method-description">{method.description}</div>
+                    </div>
+                  ))}
+                </div>
+                
+                {selectedHabitMethods.quote && (
+                  <div className="quote-section">
+                    <h4>Motivation</h4>
+                    <blockquote>{selectedHabitMethods.quote}</blockquote>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button className="btn-primary" onClick={closeMethodsModal}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   )
 }
