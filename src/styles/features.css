@@ -46,7 +46,8 @@
 .gratitude-content,
 .reflection-content,
 .bucket-list-content,
-.finance-content {
+.finance-content,
+.school-content {
   flex: 1;
   padding: var(--spacing-md);
   padding-bottom: 100px;

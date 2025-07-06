@@ -23,6 +23,11 @@ export function FeaturesProvider({ children }) {
   const [budgets, setBudgets] = useState({})
   const [savingsGoals, setSavingsGoals] = useState([])
   const [financeSettings, setFinanceSettings] = useState({})
+  const [schoolTasks, setSchoolTasks] = useState([])
+  const [schoolSubjects, setSchoolSubjects] = useState([])
+  const [schoolGrades, setSchoolGrades] = useState([])
+  const [studySchedule, setStudySchedule] = useState([])
+  const [schoolSettings, setSchoolSettings] = useState({})
   const [loading, setLoading] = useState(true)
 
   // Load user data when user changes
@@ -49,6 +54,11 @@ export function FeaturesProvider({ children }) {
     setBudgets({})
     setSavingsGoals([])
     setFinanceSettings({})
+    setSchoolTasks([])
+    setSchoolSubjects([])
+    setSchoolGrades([])
+    setStudySchedule([])
+    setSchoolSettings({})
     setLoading(false)
   }
 
@@ -71,6 +81,11 @@ export function FeaturesProvider({ children }) {
         setBudgets(userData.budgets || {})
         setSavingsGoals(userData.savingsGoals || [])
         setFinanceSettings(userData.financeSettings || {})
+        setSchoolTasks(userData.schoolTasks || [])
+        setSchoolSubjects(userData.schoolSubjects || [])
+        setSchoolGrades(userData.schoolGrades || [])
+        setStudySchedule(userData.studySchedule || [])
+        setSchoolSettings(userData.schoolSettings || {})
       }
     } catch (error) {
       console.error('Error loading features data:', error)
@@ -98,6 +113,11 @@ export function FeaturesProvider({ children }) {
         budgets,
         savingsGoals,
         financeSettings,
+        schoolTasks,
+        schoolSubjects,
+        schoolGrades,
+        studySchedule,
+        schoolSettings,
         lastUpdated: new Date()
       })
     } catch (error) {
@@ -572,6 +592,191 @@ export function FeaturesProvider({ children }) {
     setFinanceSettings(prev => ({ ...prev, ...settings }))
   }
 
+  // School functions
+  function getSchoolTasks() {
+    return schoolTasks.sort((a, b) => {
+      // Sort by due date, then by priority
+      if (a.dueDate && b.dueDate) {
+        const dateCompare = new Date(a.dueDate) - new Date(b.dueDate)
+        if (dateCompare !== 0) return dateCompare
+      }
+      if (a.dueDate && !b.dueDate) return -1
+      if (!a.dueDate && b.dueDate) return 1
+      
+      const priorityOrder = { high: 3, medium: 2, low: 1 }
+      return priorityOrder[b.priority] - priorityOrder[a.priority]
+    })
+  }
+
+  function addSchoolTask(taskData) {
+    const task = {
+      id: Date.now().toString(),
+      ...taskData,
+      completed: false,
+      completedAt: null,
+      createdAt: new Date().toISOString()
+    }
+    
+    setSchoolTasks(prev => [...prev, task])
+    
+    // Add to calendar if has due date
+    if (task.dueDate) {
+      const typeEmojis = {
+        homework: '📝',
+        quiz: '📋',
+        test: '📊',
+        project: '🎯'
+      }
+      addCalendarEvent(
+        `${typeEmojis[task.type]} ${task.title}`,
+        task.dueDate,
+        'school',
+        `${task.subject} - ${task.type}`
+      )
+    }
+    
+    return task.id
+  }
+
+  function updateSchoolTask(taskId, taskData) {
+    setSchoolTasks(prev => prev.map(task =>
+      task.id === taskId 
+        ? { ...task, ...taskData, updatedAt: new Date().toISOString() }
+        : task
+    ))
+  }
+
+  function completeSchoolTask(taskId) {
+    setSchoolTasks(prev => prev.map(task =>
+      task.id === taskId 
+        ? { ...task, completed: true, completedAt: new Date().toISOString() }
+        : task
+    ))
+  }
+
+  function deleteSchoolTask(taskId) {
+    setSchoolTasks(prev => prev.filter(task => task.id !== taskId))
+  }
+
+  function getSchoolSubjects() {
+    return schoolSubjects.sort((a, b) => a.name.localeCompare(b.name))
+  }
+
+  function addSchoolSubject(subjectData) {
+    const subject = {
+      id: Date.now().toString(),
+      ...subjectData,
+      createdAt: new Date().toISOString()
+    }
+    
+    setSchoolSubjects(prev => [...prev, subject])
+    return subject.id
+  }
+
+  function updateSchoolSubject(subjectId, subjectData) {
+    setSchoolSubjects(prev => prev.map(subject =>
+      subject.id === subjectId 
+        ? { ...subject, ...subjectData, updatedAt: new Date().toISOString() }
+        : subject
+    ))
+  }
+
+  function deleteSchoolSubject(subjectId) {
+    setSchoolSubjects(prev => prev.filter(subject => subject.id !== subjectId))
+  }
+
+  function getSchoolGrades() {
+    return schoolGrades.sort((a, b) => new Date(b.date) - new Date(a.date))
+  }
+
+  function addSchoolGrade(gradeData) {
+    const grade = {
+      id: Date.now().toString(),
+      ...gradeData,
+      createdAt: new Date().toISOString()
+    }
+    
+    setSchoolGrades(prev => [...prev, grade])
+    return grade.id
+  }
+
+  function updateSchoolGrade(gradeId, gradeData) {
+    setSchoolGrades(prev => prev.map(grade =>
+      grade.id === gradeId 
+        ? { ...grade, ...gradeData, updatedAt: new Date().toISOString() }
+        : grade
+    ))
+  }
+
+  function deleteSchoolGrade(gradeId) {
+    setSchoolGrades(prev => prev.filter(grade => grade.id !== gradeId))
+  }
+
+  function getStudySchedule() {
+    return studySchedule.sort((a, b) => {
+      // Sort by day of week, then by start time
+      const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+      const dayCompare = dayOrder.indexOf(a.dayOfWeek) - dayOrder.indexOf(b.dayOfWeek)
+      if (dayCompare !== 0) return dayCompare
+      return a.startTime.localeCompare(b.startTime)
+    })
+  }
+
+  function addStudySession(sessionData) {
+    const session = {
+      id: Date.now().toString(),
+      ...sessionData,
+      createdAt: new Date().toISOString()
+    }
+    
+    setStudySchedule(prev => [...prev, session])
+    return session.id
+  }
+
+  function updateStudySession(sessionId, sessionData) {
+    setStudySchedule(prev => prev.map(session =>
+      session.id === sessionId 
+        ? { ...session, ...sessionData, updatedAt: new Date().toISOString() }
+        : session
+    ))
+  }
+
+  function deleteStudySession(sessionId) {
+    setStudySchedule(prev => prev.filter(session => session.id !== sessionId))
+  }
+
+  function getSchoolSettings() {
+    return schoolSettings
+  }
+
+  function updateSchoolSettings(settings) {
+    setSchoolSettings(prev => ({ ...prev, ...settings }))
+  }
+
+  function calculateGPA() {
+    if (schoolGrades.length === 0) return 0
+    
+    const gradePoints = {
+      'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+      'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+      'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+      'D+': 1.3, 'D': 1.0, 'D-': 0.7,
+      'F': 0.0
+    }
+    
+    let totalPoints = 0
+    let totalCredits = 0
+    
+    schoolGrades.forEach(grade => {
+      const points = gradePoints[grade.grade] || 0
+      const credits = grade.credits || 1
+      totalPoints += points * credits
+      totalCredits += credits
+    })
+    
+    return totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : 0
+  }
+
   // Auto-save when data changes with debouncing
   useEffect(() => {
     if (!loading && currentUser) {
@@ -584,7 +789,8 @@ export function FeaturesProvider({ children }) {
   }, [
     journalEntries, calendarEvents, todoItems, mealLogs, waterIntake, 
     mealTrackerSettings, futureLetters, gratitudeEntries, dayReflections, 
-    bucketListItems, transactions, budgets, savingsGoals, financeSettings
+    bucketListItems, transactions, budgets, savingsGoals, financeSettings,
+    schoolTasks, schoolSubjects, schoolGrades, studySchedule, schoolSettings
   ])
 
   const value = {
@@ -659,6 +865,28 @@ export function FeaturesProvider({ children }) {
     deleteSavingsGoal,
     getFinanceSettings,
     updateFinanceSettings,
+    
+    // School
+    getSchoolTasks,
+    addSchoolTask,
+    updateSchoolTask,
+    completeSchoolTask,
+    deleteSchoolTask,
+    getSchoolSubjects,
+    addSchoolSubject,
+    updateSchoolSubject,
+    deleteSchoolSubject,
+    getSchoolGrades,
+    addSchoolGrade,
+    updateSchoolGrade,
+    deleteSchoolGrade,
+    getStudySchedule,
+    addStudySession,
+    updateStudySession,
+    deleteStudySession,
+    getSchoolSettings,
+    updateSchoolSettings,
+    calculateGPA,
     
     // General
     loading

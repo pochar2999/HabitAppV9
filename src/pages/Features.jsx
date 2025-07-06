@@ -47,6 +47,14 @@ export default function Features() {
       path: '/features/finance'
     },
     {
+      id: 'school',
+      name: 'School Organizer',
+      icon: '🎓',
+      description: 'Track homework, tests, and school tasks',
+      color: 'linear-gradient(135deg, #74b9ff, #0984e3)',
+      path: '/features/school'
+    },
+    {
       id: 'life-stats',
       name: 'Life Stats Dashboard',
       icon: '📊',

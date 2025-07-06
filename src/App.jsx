@@ -30,6 +30,7 @@ import GratitudeApp from './pages/features/GratitudeApp'
 import ReflectionApp from './pages/features/ReflectionApp'
 import BucketListApp from './pages/features/BucketListApp'
 import FinanceApp from './pages/features/FinanceApp'
+import SchoolApp from './pages/features/SchoolApp'
 
 function App() {
   return (
@@ -126,6 +127,11 @@ function App() {
                 <Route path="/features/finance" element={
                   <ProtectedRoute>
                     <FinanceApp />
+                  </ProtectedRoute>
+                } />
+                <Route path="/features/school" element={
+                  <ProtectedRoute>
+                    <SchoolApp />
                   </ProtectedRoute>
                 } />
                 <Route path="/my-community" element={
