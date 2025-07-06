@@ -39,6 +39,9 @@ export default function MealTrackerApp() {
   const mealStreak = getMealStreak()
   const waterStreak = getWaterStreak()
 
+  // Move tempSettings state to top level to avoid conditional hook calls
+  const [tempSettings, setTempSettings] = useState(settings)
+
   const mealTypes = {
     breakfast: { label: 'Breakfast', icon: '🌅', color: '#ffeaa7' },
     lunch: { label: 'Lunch', icon: '☀️', color: '#fab1a0' },
@@ -421,8 +424,6 @@ export default function MealTrackerApp() {
   }
 
   const renderGoalsView = () => {
-    const [tempSettings, setTempSettings] = useState(settings)
-
     const handleSaveSettings = () => {
       handleUpdateSettings(tempSettings)
       alert('Goals saved!')
