@@ -220,7 +220,8 @@ export function FeaturesProvider({ children }) {
   function addMealLog(date, mealData) {
     const meal = {
       id: Date.now().toString(),
-      ...mealData
+      ...mealData,
+      timestamp: new Date().toISOString()
     }
     
     setMealLogs(prev => ({
@@ -229,6 +230,24 @@ export function FeaturesProvider({ children }) {
     }))
     
     return meal.id
+  }
+
+  function updateMealLog(date, mealId, updatedMealData) {
+    setMealLogs(prev => ({
+      ...prev,
+      [date]: (prev[date] || []).map(meal => 
+        meal.id === mealId 
+          ? { ...meal, ...updatedMealData, timestamp: new Date().toISOString() }
+          : meal
+      )
+    }))
+  }
+
+  function deleteMealLog(date, mealId) {
+    setMealLogs(prev => ({
+      ...prev,
+      [date]: (prev[date] || []).filter(meal => meal.id !== mealId)
+    }))
   }
 
   function getWaterIntake(date) {
@@ -500,6 +519,8 @@ export function FeaturesProvider({ children }) {
     // Meal Tracker
     getMealLogs,
     addMealLog,
+    updateMealLog,
+    deleteMealLog,
     getWaterIntake,
     updateWaterIntake,
     getMealTrackerSettings,

@@ -6,6 +6,8 @@ export default function MealTrackerApp() {
   const { 
     getMealLogs, 
     addMealLog, 
+    updateMealLog,
+    deleteMealLog,
     updateWaterIntake, 
     getWaterIntake,
     getMealStreak,
@@ -30,6 +32,8 @@ export default function MealTrackerApp() {
     fat: '',
     notes: ''
   })
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   const today = new Date().toISOString().split('T')[0]
   const [todayMeals, setTodayMeals] = useState(getMealLogs(today))
@@ -47,6 +51,24 @@ export default function MealTrackerApp() {
     lunch: { label: 'Lunch', icon: '☀️', color: '#fab1a0' },
     dinner: { label: 'Dinner', icon: '🌙', color: '#fd79a8' },
     snack: { label: 'Snack', icon: '🍎', color: '#a29bfe' }
+  }
+
+  // Update local state when meals change
+  React.useEffect(() => {
+    setTodayMeals(getMealLogs(today))
+  }, [getMealLogs, today])
+
+  // Update tempSettings when settings change
+  React.useEffect(() => {
+    setTempSettings(settings)
+  }, [settings])
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message)
+    setShowSuccessMessage(true)
+    setTimeout(() => {
+      setShowSuccessMessage(false)
+    }, 3000)
   }
 
   const handleAddMeal = () => {
@@ -90,31 +112,32 @@ export default function MealTrackerApp() {
       protein: parseInt(mealForm.protein) || 0,
       carbs: parseInt(mealForm.carbs) || 0,
       fat: parseInt(mealForm.fat) || 0,
-      notes: mealForm.notes.trim(),
-      timestamp: new Date().toISOString()
+      notes: mealForm.notes.trim()
     }
 
     if (editingMeal) {
-      // Replace the existing meal
-      const updatedMeals = todayMeals.map(meal => 
-        meal.id === editingMeal.id ? { ...mealData, id: editingMeal.id } : meal
-      )
-      setTodayMeals(updatedMeals)
-      
-      // Update in the context by removing old and adding new
-      const allMeals = getMealLogs(today)
-      const filteredMeals = allMeals.filter(meal => meal.id !== editingMeal.id)
-      
-      // Simulate updating by removing all meals for today and re-adding
-      // This is a workaround since we don't have an update function
-      addMealLog(today, mealData)
-      
+      // Update existing meal
+      updateMealLog(today, editingMeal.id, mealData)
       setShowEditMealModal(false)
+      showSuccess('Meal updated successfully!')
     } else {
+      // Add new meal
       addMealLog(today, mealData)
-      setTodayMeals(getMealLogs(today))
       setShowAddMealModal(false)
+      showSuccess('Meal added successfully!')
     }
+
+    // Reset form
+    setMealForm({
+      type: 'breakfast',
+      name: '',
+      calories: '',
+      protein: '',
+      carbs: '',
+      fat: '',
+      notes: ''
+    })
+    setEditingMeal(null)
   }
 
   const handleDeleteMeal = (meal) => {
@@ -124,15 +147,10 @@ export default function MealTrackerApp() {
 
   const confirmDeleteMeal = () => {
     if (deletingMeal) {
-      // Remove from local state
-      const updatedMeals = todayMeals.filter(meal => meal.id !== deletingMeal.id)
-      setTodayMeals(updatedMeals)
-      
-      // Note: In a real implementation, we would need a deleteMealLog function in the context
-      // For now, we'll just update the local state
-      
+      deleteMealLog(today, deletingMeal.id)
       setShowDeleteModal(false)
       setDeletingMeal(null)
+      showSuccess('Meal deleted successfully!')
     }
   }
 
@@ -160,7 +178,8 @@ export default function MealTrackerApp() {
   }
 
   const getTotalNutrition = () => {
-    return todayMeals.reduce((total, meal) => ({
+    const currentMeals = getMealLogs(today)
+    return currentMeals.reduce((total, meal) => ({
       calories: total.calories + (meal.calories || 0),
       protein: total.protein + (meal.protein || 0),
       carbs: total.carbs + (meal.carbs || 0),
@@ -169,7 +188,8 @@ export default function MealTrackerApp() {
   }
 
   const getMealsForType = (type) => {
-    return todayMeals.filter(meal => meal.type === type)
+    const currentMeals = getMealLogs(today)
+    return currentMeals.filter(meal => meal.type === type)
   }
 
   const formatTime = (timestamp) => {
@@ -286,7 +306,7 @@ export default function MealTrackerApp() {
                   ) : (
                     <div className="meal-items">
                       {meals.map((meal, index) => (
-                        <div key={index} className="meal-item">
+                        <div key={meal.id} className="meal-item">
                           <div className="meal-info">
                             <div className="meal-name">{meal.name}</div>
                             <div className="meal-time">{formatTime(meal.timestamp)}</div>
@@ -426,7 +446,7 @@ export default function MealTrackerApp() {
   const renderGoalsView = () => {
     const handleSaveSettings = () => {
       handleUpdateSettings(tempSettings)
-      alert('Goals saved!')
+      showSuccess('Goals saved successfully!')
     }
 
     return (
@@ -524,6 +544,16 @@ export default function MealTrackerApp() {
   return (
     <Layout title="🍱 Meal & Water Tracker" showBackButton={true} backTo="/features">
       <div className="meal-tracker-content">
+        {/* Success Message */}
+        {showSuccessMessage && (
+          <div className="success-toast">
+            <div className="success-toast-content">
+              <span className="success-icon">✅</span>
+              <span className="success-text">{successMessage}</span>
+            </div>
+          </div>
+        )}
+
         <div className="meal-tracker-tabs">
           <button 
             className={`tab-btn ${activeTab === 'today' ? 'active' : ''}`}
