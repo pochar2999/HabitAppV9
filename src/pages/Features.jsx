@@ -44,8 +44,7 @@ export default function Features() {
       icon: '💰',
       description: 'Track expenses, budgets, savings, and more',
       color: 'linear-gradient(135deg, #ffeaa7, #fab1a0)',
-      path: '/features/finance',
-      size: 'large'
+      path: '/features/finance'
     },
     {
       id: 'life-stats',
@@ -101,7 +100,7 @@ export default function Features() {
           {features.map((feature) => (
             <div
               key={feature.id}
-              className={`feature-app-card ${feature.size === 'large' ? 'large-card' : ''}`}
+              className="feature-app-card"
               onClick={() => navigate(feature.path)}
               style={{ background: feature.color }}
             >
