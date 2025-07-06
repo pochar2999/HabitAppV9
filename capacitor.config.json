@@ -1,0 +1,6 @@
+{
+  "appId": "com.shivam.lifestyle",
+  "appName": "HabitFlow",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
