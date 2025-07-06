@@ -19,6 +19,10 @@ export function FeaturesProvider({ children }) {
   const [gratitudeEntries, setGratitudeEntries] = useState([])
   const [dayReflections, setDayReflections] = useState([])
   const [bucketListItems, setBucketListItems] = useState([])
+  const [transactions, setTransactions] = useState([])
+  const [budgets, setBudgets] = useState({})
+  const [savingsGoals, setSavingsGoals] = useState([])
+  const [financeSettings, setFinanceSettings] = useState({})
   const [loading, setLoading] = useState(true)
 
   // Load user data when user changes
@@ -41,6 +45,10 @@ export function FeaturesProvider({ children }) {
     setGratitudeEntries([])
     setDayReflections([])
     setBucketListItems([])
+    setTransactions([])
+    setBudgets({})
+    setSavingsGoals([])
+    setFinanceSettings({})
     setLoading(false)
   }
 
@@ -59,6 +67,10 @@ export function FeaturesProvider({ children }) {
         setGratitudeEntries(userData.gratitudeEntries || [])
         setDayReflections(userData.dayReflections || [])
         setBucketListItems(userData.bucketListItems || [])
+        setTransactions(userData.transactions || [])
+        setBudgets(userData.budgets || {})
+        setSavingsGoals(userData.savingsGoals || [])
+        setFinanceSettings(userData.financeSettings || {})
       }
     } catch (error) {
       console.error('Error loading features data:', error)
@@ -82,6 +94,10 @@ export function FeaturesProvider({ children }) {
         gratitudeEntries,
         dayReflections,
         bucketListItems,
+        transactions,
+        budgets,
+        savingsGoals,
+        financeSettings,
         lastUpdated: new Date()
       })
     } catch (error) {
@@ -479,6 +495,83 @@ export function FeaturesProvider({ children }) {
     setBucketListItems(prev => prev.filter(item => item.id !== itemId))
   }
 
+  // Finance functions
+  function getTransactions() {
+    return transactions.sort((a, b) => new Date(b.date) - new Date(a.date))
+  }
+
+  function addTransaction(transactionData) {
+    const transaction = {
+      id: Date.now().toString(),
+      ...transactionData,
+      createdAt: new Date().toISOString()
+    }
+    
+    setTransactions(prev => [...prev, transaction])
+    return transaction.id
+  }
+
+  function updateTransaction(transactionId, transactionData) {
+    setTransactions(prev => prev.map(transaction =>
+      transaction.id === transactionId 
+        ? { ...transaction, ...transactionData, updatedAt: new Date().toISOString() }
+        : transaction
+    ))
+  }
+
+  function deleteTransaction(transactionId) {
+    setTransactions(prev => prev.filter(transaction => transaction.id !== transactionId))
+  }
+
+  function getBudgets() {
+    return budgets
+  }
+
+  function setBudget(category, budgetData) {
+    setBudgets(prev => ({
+      ...prev,
+      [category]: {
+        ...budgetData,
+        updatedAt: new Date().toISOString()
+      }
+    }))
+  }
+
+  function getSavingsGoals() {
+    return savingsGoals.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  }
+
+  function addSavingsGoal(goalData) {
+    const goal = {
+      id: Date.now().toString(),
+      ...goalData,
+      createdAt: new Date().toISOString()
+    }
+    
+    setSavingsGoals(prev => [...prev, goal])
+    return goal.id
+  }
+
+  function updateSavingsGoal(goalId, goalData) {
+    setSavingsGoals(prev => prev.map(goal =>
+      goal.id === goalId 
+        ? { ...goal, ...goalData, updatedAt: new Date().toISOString() }
+        : goal
+    ))
+  }
+
+  function deleteSavingsGoal(goalId) {
+    setSavingsGoals(prev => prev.filter(goal => goal.id !== goalId))
+  }
+
+  function getFinanceSettings() {
+    return financeSettings
+  }
+
+  function updateFinanceSettings(settings) {
+    setFinanceSettings(prev => ({ ...prev, ...settings }))
+  }
+
   // Auto-save when data changes with debouncing
   useEffect(() => {
     if (!loading && currentUser) {
@@ -491,7 +584,7 @@ export function FeaturesProvider({ children }) {
   }, [
     journalEntries, calendarEvents, todoItems, mealLogs, waterIntake, 
     mealTrackerSettings, futureLetters, gratitudeEntries, dayReflections, 
-    bucketListItems
+    bucketListItems, transactions, budgets, savingsGoals, financeSettings
   ])
 
   const value = {
@@ -552,6 +645,20 @@ export function FeaturesProvider({ children }) {
     updateBucketListItem,
     completeBucketListItem,
     deleteBucketListItem,
+    
+    // Finance
+    getTransactions,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    getBudgets,
+    setBudget,
+    getSavingsGoals,
+    addSavingsGoal,
+    updateSavingsGoal,
+    deleteSavingsGoal,
+    getFinanceSettings,
+    updateFinanceSettings,
     
     // General
     loading

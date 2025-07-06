@@ -39,6 +39,15 @@ export default function Features() {
       path: '/features/meal-tracker'
     },
     {
+      id: 'finance',
+      name: 'Finance Center',
+      icon: '💰',
+      description: 'Track expenses, budgets, savings, and more',
+      color: 'linear-gradient(135deg, #ffeaa7, #fab1a0)',
+      path: '/features/finance',
+      size: 'large'
+    },
+    {
       id: 'life-stats',
       name: 'Life Stats Dashboard',
       icon: '📊',
@@ -92,7 +101,7 @@ export default function Features() {
           {features.map((feature) => (
             <div
               key={feature.id}
-              className="feature-app-card"
+              className={`feature-app-card ${feature.size === 'large' ? 'large-card' : ''}`}
               onClick={() => navigate(feature.path)}
               style={{ background: feature.color }}
             >

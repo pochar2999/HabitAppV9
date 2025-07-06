@@ -45,7 +45,8 @@
 .future-letters-content,
 .gratitude-content,
 .reflection-content,
-.bucket-list-content {
+.bucket-list-content,
+.finance-content {
   flex: 1;
   padding: var(--spacing-md);
   padding-bottom: 100px;
@@ -152,4 +153,77 @@
 .start-reflection-btn:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+/* Large feature card for Finance Center */
+.feature-app-card.large-card {
+  grid-column: span 2;
+  min-height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-app-card.large-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(30px, -30px);
+}
+
+.feature-app-card.large-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  transform: translate(-20px, 20px);
+}
+
+.feature-app-card.large-card .feature-app-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-md);
+}
+
+.feature-app-card.large-card .feature-app-name {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+}
+
+.feature-app-card.large-card .feature-app-description {
+  font-size: 16px;
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .feature-app-card.large-card {
+    grid-column: span 1;
+    min-height: 160px;
+  }
+  
+  .feature-app-card.large-card .feature-app-icon {
+    font-size: 40px;
+  }
+  
+  .feature-app-card.large-card .feature-app-name {
+    font-size: 20px;
+  }
+  
+  .feature-app-card.large-card .feature-app-description {
+    font-size: 14px;
+  }
 }
