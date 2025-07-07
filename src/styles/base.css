@@ -54,34 +54,207 @@ body {
 }
 
 /* Homepage specific improvements */
-.home-content {
+.dashboard-content {
   flex: 1;
   padding: var(--spacing-md);
   padding-bottom: 100px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--spacing-xl);
   max-width: 1200px;
   margin: 0 auto;
-  align-items: start;
+  align-items: center;
+}
+
+/* Action Buttons Section */
+.action-buttons-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  width: 100%;
+  max-width: 800px;
+}
+
+.action-button {
+  background: white;
+  border-radius: 20px;
+  padding: var(--spacing-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 200px;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transition: all 0.3s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.build-button::before {
+  background: linear-gradient(90deg, #48bb78, #38a169);
+}
+
+.break-button::before {
+  background: linear-gradient(90deg, #f56565, #e53e3e);
+}
+
+.build-button:hover::before {
+  height: 6px;
+}
+
+.break-button:hover::before {
+  height: 6px;
+}
+
+.button-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-md);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.button-content h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.2;
+}
+
+.button-content p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Progress Section */
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  width: 100%;
+  max-width: 400px;
+}
+
+.progress-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0;
+}
+
+.progress-circle-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-circle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-svg {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.progress-fill {
+  transition: stroke-dashoffset 1s ease-in-out;
+}
+
+.progress-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2;
+}
+
+.progress-percentage {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: var(--spacing-xs);
+}
+
+.progress-fraction {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 /* Mobile-first responsive grid */
 @media (max-width: 767px) {
-  .home-content {
+  .action-buttons-section {
     grid-template-columns: 1fr;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
+  }
+  
+  .action-button {
+    min-height: 160px;
+    padding: var(--spacing-lg);
+  }
+  
+  .button-icon {
+    font-size: 40px;
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .button-content h3 {
+    font-size: 20px;
+  }
+  
+  .button-content p {
+    font-size: 14px;
+  }
+  
+  .progress-title {
+    font-size: 24px;
+  }
+  
+  .progress-percentage {
+    font-size: 28px;
+  }
+  
+  .progress-fraction {
+    font-size: 12px;
   }
 }
 
 @media (min-width: 768px) {
-  .home-content {
+  .dashboard-content {
     padding: var(--spacing-lg);
   }
 }
 
 @media (min-width: 1024px) {
-  .home-content {
+  .dashboard-content {
     padding: var(--spacing-xl);
   }
 }

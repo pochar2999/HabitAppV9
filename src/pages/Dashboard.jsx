@@ -1,44 +1,101 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
+import { useHabits } from '../contexts/HabitContext'
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const { habits } = useHabits()
+
+  // Calculate today's progress
+  const getTodaysProgress = () => {
+    const habitsList = Object.values(habits)
+    const totalHabits = habitsList.length
+    
+    if (totalHabits === 0) {
+      return { completed: 0, total: 0, percentage: 0 }
+    }
+
+    const today = new Date().toDateString()
+    const completedToday = habitsList.filter(habit => 
+      habit.completedDays && habit.completedDays.includes(today)
+    ).length
+
+    const percentage = Math.round((completedToday / totalHabits) * 100)
+    
+    return { completed: completedToday, total: totalHabits, percentage }
+  }
+
+  const progress = getTodaysProgress()
 
   return (
     <Layout>
-      <div className="home-content">
-        <div 
-          className="habit-flow-card build-card" 
-          onClick={() => navigate('/build-habits')}
-        >
-          <div className="card-background">
-            <img 
-              src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop&crop=center" 
-              alt="Build Habits" 
-              className="card-image"
-            />
+      <div className="dashboard-content">
+        {/* Top Section - Action Buttons */}
+        <div className="action-buttons-section">
+          <div 
+            className="action-button build-button" 
+            onClick={() => navigate('/build-habits')}
+          >
+            <div className="button-icon">🌱</div>
+            <div className="button-content">
+              <h3>Build Habit</h3>
+              <p>Start a new positive habit to grow.</p>
+            </div>
           </div>
-          <div className="card-content">
-            <h3>Build a Habit</h3>
-            <p>Start forming positive habits with proven methods</p>
+          
+          <div 
+            className="action-button break-button" 
+            onClick={() => navigate('/break-habits')}
+          >
+            <div className="button-icon">🔥</div>
+            <div className="button-content">
+              <h3>Break Habit</h3>
+              <p>Eliminate a habit holding you back.</p>
+            </div>
           </div>
         </div>
-        
-        <div 
-          className="habit-flow-card break-card" 
-          onClick={() => navigate('/break-habits')}
-        >
-          <div className="card-background">
-            <img 
-              src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=300&fit=crop&crop=center" 
-              alt="Break Habits" 
-              className="card-image"
-            />
-          </div>
-          <div className="card-content">
-            <h3>Break a Habit</h3>
-            <p>Overcome unwanted behaviors with targeted strategies</p>
+
+        {/* Middle Section - Today's Progress */}
+        <div className="progress-section">
+          <h2 className="progress-title">Today's Progress</h2>
+          <div className="progress-circle-container">
+            <div className="progress-circle">
+              <svg width="160" height="160" className="progress-svg">
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="70"
+                  stroke="#e2e8f0"
+                  strokeWidth="8"
+                  fill="none"
+                  className="progress-bg"
+                />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="70"
+                  stroke="url(#progressGradient)"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 70}`}
+                  strokeDashoffset={`${2 * Math.PI * 70 * (1 - progress.percentage / 100)}`}
+                  className="progress-fill"
+                  transform="rotate(-90 80 80)"
+                />
+                <defs>
+                  <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#667eea" />
+                    <stop offset="100%" stopColor="#48bb78" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="progress-content">
+                <div className="progress-percentage">{progress.percentage}%</div>
+                <div className="progress-fraction">{progress.completed}/{progress.total} Habits Done</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
