@@ -9,7 +9,7 @@ export default function PasswordVaultApp() {
     updatePasswordEntry,
     deletePasswordEntry,
     getVaultPin,
-    setVaultPin,
+    updateVaultPin,
     verifyVaultPin
   } = useFeatures()
 
@@ -55,7 +55,7 @@ export default function PasswordVaultApp() {
       return
     }
 
-    setVaultPin(newPin)
+    updateVaultPin(newPin)
     setShowPinSetup(false)
     setIsUnlocked(true)
     setNewPin('')
