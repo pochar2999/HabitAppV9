@@ -795,7 +795,7 @@ export function FeaturesProvider({ children }) {
     return vaultPin
   }
 
-  function setVaultPin(pin) {
+  function updateVaultPin(pin) {
     // In a real app, you'd want to hash this PIN
     // For demo purposes, we'll store it as-is
     setVaultPin(pin)
@@ -947,7 +947,7 @@ export function FeaturesProvider({ children }) {
     updatePasswordEntry,
     deletePasswordEntry,
     getVaultPin,
-    setVaultPin,
+    updateVaultPin,
     verifyVaultPin,
     
     // General
