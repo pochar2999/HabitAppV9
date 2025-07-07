@@ -54,11 +54,13 @@
   font-size: 24px;
   font-weight: 700;
   line-height: 1;
+  color: white;
 }
 
 .stat-label {
   font-size: 14px;
-  opacity: 0.8;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
   margin-top: var(--spacing-xs);
 }
 
