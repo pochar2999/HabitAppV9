@@ -29,6 +29,10 @@ export function FeaturesProvider({ children }) {
   const [studySchedule, setStudySchedule] = useState([])
   const [schoolSettings, setSchoolSettings] = useState({})
   const [loading, setLoading] = useState(true)
+  
+  // Password Vault state
+  const [passwordEntries, setPasswordEntries] = useState([])
+  const [vaultPin, setVaultPin] = useState('')
 
   // Load user data when user changes
   useEffect(() => {
@@ -59,6 +63,8 @@ export function FeaturesProvider({ children }) {
     setSchoolGrades([])
     setStudySchedule([])
     setSchoolSettings({})
+    setPasswordEntries([])
+    setVaultPin('')
     setLoading(false)
   }
 
@@ -86,6 +92,8 @@ export function FeaturesProvider({ children }) {
         setSchoolGrades(userData.schoolGrades || [])
         setStudySchedule(userData.studySchedule || [])
         setSchoolSettings(userData.schoolSettings || {})
+        setPasswordEntries(userData.passwordEntries || [])
+        setVaultPin(userData.vaultPin || '')
       }
     } catch (error) {
       console.error('Error loading features data:', error)
@@ -118,6 +126,8 @@ export function FeaturesProvider({ children }) {
         schoolGrades,
         studySchedule,
         schoolSettings,
+        passwordEntries,
+        vaultPin,
         lastUpdated: new Date()
       })
     } catch (error) {
@@ -753,6 +763,48 @@ export function FeaturesProvider({ children }) {
     setSchoolSettings(prev => ({ ...prev, ...settings }))
   }
 
+  // Password Vault functions
+  function getPasswordEntries() {
+    return passwordEntries.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  }
+
+  function addPasswordEntry(entryData) {
+    const entry = {
+      id: Date.now().toString(),
+      ...entryData,
+      createdAt: new Date().toISOString()
+    }
+    
+    setPasswordEntries(prev => [...prev, entry])
+    return entry.id
+  }
+
+  function updatePasswordEntry(entryId, entryData) {
+    setPasswordEntries(prev => prev.map(entry =>
+      entry.id === entryId 
+        ? { ...entry, ...entryData, updatedAt: new Date().toISOString() }
+        : entry
+    ))
+  }
+
+  function deletePasswordEntry(entryId) {
+    setPasswordEntries(prev => prev.filter(entry => entry.id !== entryId))
+  }
+
+  function getVaultPin() {
+    return vaultPin
+  }
+
+  function setVaultPin(pin) {
+    // In a real app, you'd want to hash this PIN
+    // For demo purposes, we'll store it as-is
+    setVaultPin(pin)
+  }
+
+  function verifyVaultPin(inputPin) {
+    return inputPin === vaultPin
+  }
+
   function calculateGPA() {
     if (schoolGrades.length === 0) return 0
     
@@ -790,7 +842,8 @@ export function FeaturesProvider({ children }) {
     journalEntries, calendarEvents, todoItems, mealLogs, waterIntake, 
     mealTrackerSettings, futureLetters, gratitudeEntries, dayReflections, 
     bucketListItems, transactions, budgets, savingsGoals, financeSettings,
-    schoolTasks, schoolSubjects, schoolGrades, studySchedule, schoolSettings
+    schoolTasks, schoolSubjects, schoolGrades, studySchedule, schoolSettings,
+    passwordEntries, vaultPin
   ])
 
   const value = {
@@ -887,6 +940,15 @@ export function FeaturesProvider({ children }) {
     getSchoolSettings,
     updateSchoolSettings,
     calculateGPA,
+    
+    // Password Vault
+    getPasswordEntries,
+    addPasswordEntry,
+    updatePasswordEntry,
+    deletePasswordEntry,
+    getVaultPin,
+    setVaultPin,
+    verifyVaultPin,
     
     // General
     loading

@@ -93,6 +93,14 @@ export default function Features() {
       description: 'Track your dreams and life goals',
       color: 'linear-gradient(135deg, #fad0c4, #ffd1ff)',
       path: '/features/bucket-list'
+    },
+    {
+      id: 'password-vault',
+      name: 'Password Vault',
+      icon: '🔐',
+      description: 'Securely save your important credentials',
+      color: 'linear-gradient(135deg, #667eea, #764ba2)',
+      path: '/features/password-vault'
     }
   ]
 
