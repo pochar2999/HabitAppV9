@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useHabits } from '../contexts/HabitContext'
-import WeeklyProgress from './WeeklyProgress'
 
 export default function Header({ title, showBackButton = false, backTo = "/" }) {
   const navigate = useNavigate()
@@ -56,7 +55,6 @@ export default function Header({ title, showBackButton = false, backTo = "/" }) 
                 <span className="stat-label">Active Habits</span>
               </div>
             </div>
-            <WeeklyProgress />
           </>
         )}
 

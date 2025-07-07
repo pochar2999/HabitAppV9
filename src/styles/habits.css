@@ -1,13 +1,4 @@
 /* Habits specific styles */
-.home-content {
-  flex: 1;
-  padding: var(--spacing-md);
-  padding-bottom: 100px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
 .habits-content {
   flex: 1;
   padding: var(--spacing-md);
