@@ -3,15 +3,22 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: process.env.VITE_BASE_URL || '/',
+  base: './',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'terser',
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          router: ['react-router-dom']
+        },
       },
     },
+    chunkSizeWarningLimit: 1000,
   },
   server: {
     host: '0.0.0.0',
@@ -26,5 +33,8 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['firebase/app', 'firebase/auth', 'firebase/firestore']
+  },
+  define: {
+    global: 'globalThis',
   }
 })

@@ -1,7 +1,7 @@
 {
   "name": "habitflow-react",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "homepage": "https://ShivamParikh1.github.io/HabitAppV5",
   "scripts": {
@@ -9,22 +9,40 @@
     "build": "vite build",
     "build:gh": "cross-env VITE_BASE_URL=/HabitAppV5/ vite build",
     "build:vercel": "cross-env VITE_BASE_URL=/ vite build",
+    "build:capacitor": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build:gh",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync": "npx cap sync",
+    "cap:sync:ios": "npx cap sync ios",
+    "cap:open:ios": "npx cap open ios",
+    "cap:run:ios": "npx cap run ios",
+    "cap:build:ios": "npm run build:capacitor && npx cap sync ios && npx cap open ios",
+    "ios:dev": "npm run build:capacitor && npx cap sync ios && npx cap run ios --livereload --external",
+    "ios:build": "npm run build:capacitor && npx cap sync ios",
+    "ios:open": "npx cap open ios"
   },
   "dependencies": {
+    "@capacitor/app": "^5.0.8",
+    "@capacitor/core": "^5.7.8",
+    "@capacitor/haptics": "^5.0.8",
+    "@capacitor/keyboard": "^5.0.9",
+    "@capacitor/splash-screen": "^5.0.8",
+    "@capacitor/status-bar": "^5.0.8",
     "firebase": "^11.9.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.8.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^5.7.8",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
     "@vitejs/plugin-react": "^3.1.0",
     "cross-env": "^7.0.3",
     "gh-pages": "^6.1.1",
+    "terser": "^5.43.1",
     "vite": "^4.5.0"
   }
 }

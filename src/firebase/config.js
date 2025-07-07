@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { Capacitor } from '@capacitor/core';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAK3KSNQ60sZStGZ5ir_fn6VWPBkzUd_Oo",
@@ -12,6 +13,30 @@ const firebaseConfig = {
   measurementId: "G-X442N3W6V1"
 };
 
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase with error handling for Capacitor
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+} catch (error) {
+  console.error('Firebase initialization error:', error);
+  // Retry initialization for Capacitor
+  if (Capacitor.isNativePlatform()) {
+    setTimeout(() => {
+      try {
+        app = initializeApp(firebaseConfig);
+      } catch (retryError) {
+        console.error('Firebase retry initialization error:', retryError);
+      }
+    }, 1000);
+  }
+}
+
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Add connection state monitoring for Capacitor
+if (Capacitor.isNativePlatform()) {
+  auth.onAuthStateChanged((user) => {
+    console.log('Auth state changed:', user ? 'logged in' : 'logged out');
+  });
+}
