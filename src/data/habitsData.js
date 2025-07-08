@@ -195,7 +195,7 @@ export const habitsData = {
     id: 'junk-food',
     name: 'Stop Eating Junk Food',
     type: 'break',
-    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=80&h=80&fit=crop&crop=center',
+    image: 'https://images.unsplash.com/photo-1615380547239-45634678986c?q=80&w=1149&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     description: 'Junk food provides temporary satisfaction but leads to energy crashes, weight gain, and health issues. Breaking this habit improves energy, mood, and long-term health.',
     methods: [
       {
