@@ -41,6 +41,27 @@ export const habitsData = {
       }
     ]
   },
+  'sleep-on-time': {
+    id: 'sleep-on-time',
+    name: 'Sleep on Time',
+    type: 'build',
+    image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=80&h=80&fit=crop&crop=center',
+    description: 'Getting adequate sleep at consistent times is crucial for physical health, mental clarity, and emotional well-being. A regular sleep schedule helps regulate your circadian rhythm, improves memory consolidation, and boosts immune function.',
+    methods: [
+      {
+        title: 'Sleep Schedule Consistency',
+        description: 'Go to bed and wake up at the same time every day, even on weekends, to regulate your internal clock.'
+      },
+      {
+        title: 'Evening Wind-Down Routine',
+        description: 'Create a relaxing 30-60 minute routine before bed: dim lights, avoid screens, read, or practice meditation.'
+      },
+      {
+        title: 'Sleep Environment Optimization',
+        description: 'Keep your bedroom cool (65-68°F), dark, and quiet. Use blackout curtains and consider white noise if needed.'
+      }
+    ]
+  },
   'meditation': {
     id: 'meditation',
     name: 'Practice Meditation',

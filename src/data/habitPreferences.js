@@ -46,6 +46,70 @@ export const habitPreferencesConfig = {
     completionType: 'multi',
     getTargetCount: (preferences) => preferences.dailyGlasses || 8
   },
+  'sleep-on-time': {
+    fields: [
+      {
+        key: 'targetBedtime',
+        label: 'Target Bedtime',
+        type: 'text',
+        placeholder: '10:00 PM',
+        defaultValue: '10:00 PM',
+        required: true,
+        description: 'What time do you want to go to bed each night?'
+      },
+      {
+        key: 'sleepDuration',
+        label: 'Desired Sleep Duration (hours)',
+        type: 'number',
+        min: 6,
+        max: 12,
+        defaultValue: 8,
+        required: true,
+        description: 'How many hours of sleep do you need per night?'
+      },
+      {
+        key: 'wakeUpTime',
+        label: 'Wake Up Time',
+        type: 'text',
+        placeholder: '6:00 AM',
+        defaultValue: '6:00 AM',
+        description: 'What time do you need to wake up?'
+      },
+      {
+        key: 'windDownActivity',
+        label: 'Wind-Down Activity',
+        type: 'select',
+        options: [
+          { value: 'reading', label: 'Reading' },
+          { value: 'meditation', label: 'Meditation' },
+          { value: 'music', label: 'Listening to music' },
+          { value: 'bath', label: 'Taking a bath' },
+          { value: 'journaling', label: 'Journaling' },
+          { value: 'stretching', label: 'Light stretching' }
+        ],
+        defaultValue: 'reading',
+        description: 'What activity helps you relax before bed?'
+      },
+      {
+        key: 'sleepReminders',
+        label: 'Sleep Reminders',
+        type: 'time-list',
+        placeholder: '9:00 PM (wind-down), 9:30 PM (prepare for bed)',
+        description: 'When would you like reminders to start your bedtime routine?'
+      },
+      {
+        key: 'weeklyGoal',
+        label: 'Weekly Sleep Goal (nights)',
+        type: 'number',
+        min: 1,
+        max: 7,
+        defaultValue: 7,
+        description: 'How many nights per week do you want to sleep on time?'
+      }
+    ],
+    completionType: 'single',
+    getTargetCount: () => 1
+  },
   'meditation': {
     fields: [
       {
