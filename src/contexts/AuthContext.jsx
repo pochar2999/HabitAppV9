@@ -8,7 +8,7 @@ import {
   sendPasswordResetEmail,
   updateProfile
 } from 'firebase/auth'
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase/config'
 
 const AuthContext = createContext()
@@ -58,9 +58,9 @@ export function AuthProvider({ children }) {
     const userCred = await signInWithEmailAndPassword(auth, email, password)
     
     // Update last login time
-    await updateDoc(doc(db, "users", userCred.user.uid), {
+    await setDoc(doc(db, "users", userCred.user.uid), {
       lastLogin: new Date()
-    })
+    }, { merge: true })
 
     return userCred
   }
@@ -79,7 +79,7 @@ export function AuthProvider({ children }) {
   }
 
   async function updateUserData(uid, data) {
-    return updateDoc(doc(db, "users", uid), data)
+    return setDoc(doc(db, "users", uid), data, { merge: true })
   }
 
   useEffect(() => {
