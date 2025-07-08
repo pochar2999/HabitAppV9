@@ -24,10 +24,18 @@ export function AuthProvider({ children }) {
   async function signup(email, password, name) {
     const userCred = await createUserWithEmailAndPassword(auth, email, password)
     await updateProfile(userCred.user, { displayName: name })
-    await sendEmailVerification(userCred.user)
+    
+    // Send email verification immediately after account creation
+    try {
+      await sendEmailVerification(userCred.user)
+      console.log('Email verification sent successfully')
+    } catch (verificationError) {
+      console.error('Error sending verification email:', verificationError)
+      // Don't throw error - allow signup to continue even if email fails
+    }
 
     // Create user document in Firestore
-    await setDoc(doc(db, "users", userCred.user.uid), {
+    const userData = {
       userId: userCred.user.uid,
       name,
       email,
@@ -38,7 +46,10 @@ export function AuthProvider({ children }) {
       habitCompletion: {},
       activityLog: {},
       habitPreferences: {}
-    })
+    }
+    
+    // Use setDoc to create the document
+    await setDoc(doc(db, "users", userCred.user.uid), userData)
 
     return userCred
   }

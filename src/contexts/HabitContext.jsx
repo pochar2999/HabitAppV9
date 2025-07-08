@@ -62,7 +62,7 @@ export function HabitProvider({ children }) {
     if (!currentUser) return
 
     try {
-      await updateUserData(currentUser.uid, {
+      const userData = {
         habits,
         habitCompletion,
         activityLog,
@@ -71,7 +71,10 @@ export function HabitProvider({ children }) {
         dailyStats,
         reflections,
         lastUpdated: new Date()
-      })
+      }
+      
+      // Use setDoc with merge to safely update or create the document
+      await setDoc(doc(db, "users", currentUser.uid), userData, { merge: true })
     } catch (error) {
       console.error('Error saving user data:', error)
     }

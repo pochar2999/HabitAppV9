@@ -45,7 +45,7 @@ export default function Signup() {
     try {
       setLoading(true)
       await signup(email, password, name)
-      showMessage('Account created successfully! Please check your email for verification link.', 'success')
+      showMessage('Account created successfully! Verification email sent - please check your inbox and verify your email before logging in.', 'success')
       setTimeout(() => navigate('/verify-email'), 2000)
     } catch (error) {
       let errorMessage = 'An error occurred. Please try again.'
