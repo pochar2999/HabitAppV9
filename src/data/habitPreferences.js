@@ -293,6 +293,47 @@ export const habitPreferencesConfig = {
     ],
     completionType: 'single',
     getTargetCount: () => 1
+  },
+    'read-daily': {
+    fields: [
+      {
+        key: 'dailyPages',
+        label: 'Pages Per Day',
+        type: 'number',
+        min: 1,
+        max: 100,
+        defaultValue: 10,
+        required: true,
+        description: 'How many pages would you like to read each day?'
+      },
+      {
+        key: 'preferredTime',
+        label: 'Preferred Time of Day',
+        type: 'select',
+        options: [
+          { value: 'morning', label: 'Morning' },
+          { value: 'afternoon', label: 'Afternoon' },
+          { value: 'evening', label: 'Evening' },
+          { value: 'night', label: 'Night (before bed)' }
+        ],
+        defaultValue: 'night',
+        description: 'When would you prefer to do your reading?'
+      },
+      {
+        key: 'readingFormat',
+        label: 'Preferred Format',
+        type: 'select',
+        options: [
+          { value: 'physical', label: 'Physical Book' },
+          { value: 'ebook', label: 'E-Book' },
+          { value: 'audiobook', label: 'Audiobook' }
+        ],
+        defaultValue: 'physical',
+        description: 'What format do you usually read in?'
+      }
+    ],
+    completionType: 'multi',
+    getTargetCount: (preferences) => preferences.dailyPages || 10
   }
 }
 
