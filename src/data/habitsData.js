@@ -212,6 +212,27 @@ export const habitsData = {
       }
     ],
     quote: 'Take care of your body. It\'s the only place you have to live. - Jim Rohn'
+  },
+  'read-daily': {
+    id: 'read-daily',
+    name: 'Read Daily',
+    type: 'build',
+    image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=80&h=80&fit=crop&crop=center',
+    description: 'Daily reading sharpens your mind, reduces stress, and enhances your knowledge. Whether it’s 5 pages or 30, consistent reading builds lifelong learning and focus.',
+    methods: [
+      {
+        title: 'Read with Routine',
+        description: 'Pick a fixed time each day—like before bed or after lunch—for your reading session.'
+      },
+      {
+        title: 'Book Nearby Strategy',
+        description: 'Keep your book or e-reader in plain sight to create a strong visual cue.'
+      },
+      {
+        title: 'Track Progress',
+        description: 'Use a journal or reading app to mark off each day you complete your goal.'
+      }
+    ]
   }
 }
 
